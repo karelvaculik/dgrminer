@@ -748,16 +748,6 @@ namespace dgrminer
 	}
 
 
-
-	inline bool operator<(const labeled_node_time& lhs, const labeled_node_time& rhs)
-	{
-		return (lhs.time < rhs.time || (lhs.time == rhs.time && lhs.id < rhs.id));
-	}
-	inline bool operator==(const labeled_node_time& lhs, const labeled_node_time& rhs)
-	{
-		return (lhs.time == rhs.time &&  lhs.id == rhs.id);
-	}
-
 	// compares two labeled_edges (used for set structure)
 	inline bool operator<(const labeled_edge_with_occurrences& lhs, const labeled_edge_with_occurrences& rhs)
 	{

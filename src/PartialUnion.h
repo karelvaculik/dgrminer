@@ -126,6 +126,15 @@ namespace dgrminer {
 
     void printResultsToFiles(results_crate * results, results_crate_anomalies * results_anomalies, PartialUnion pu, std::string output_file, bool set_of_graphs,
                              bool compute_confidence, bool search_for_anomalies, bool append_to_file);
+
+    inline bool operator<(const labeled_node_time& lhs, const labeled_node_time& rhs)
+    {
+        return (lhs.time < rhs.time || (lhs.time == rhs.time && lhs.id < rhs.id));
+    }
+    inline bool operator==(const labeled_node_time& lhs, const labeled_node_time& rhs)
+    {
+        return (lhs.time == rhs.time &&  lhs.id == rhs.id);
+    }
 }
 
 
