@@ -11,6 +11,10 @@
 #include <array>
 #include <map>
 #include <set>
+#include <unordered_map>
+#include <unordered_set>
+#include "algorithm"
+#include "OverlapGraph.hpp"
 
 using namespace std;
 
@@ -31,18 +35,29 @@ namespace dgrminer {
         // src-label, src-changetime, direction, label, changetime, dst-label, dst-changetime, id
         std::array<int, 8> elements;
         mutable std::set<int> occurrences;
+        mutable std::pair<size_t, bool> new_support = {0, false};
+
+        mutable std::unordered_map<int, std::set<int>> multiple_occurrences;
+
+        size_t support(
+            const std::vector<std::array<int, 8>>& edges,
+            bool new_measures
+        ) const;
     };
 
-    struct labeled_node
-    {
+    struct labeled_node {
         int changetime;
         int label;
         std::set<int> occurrences;
+        std::unordered_map<int, std::set<int>> multiple_occurrences;
 
-        bool operator () (const labeled_node& ln) const
-        {
+        bool operator () (const labeled_node& ln) const {
             return (ln.changetime == changetime && ln.label == label);
         }
+
+        size_t support(
+            bool new_measures
+        );
     };
 
     class PartialUnion
@@ -59,6 +74,10 @@ namespace dgrminer {
         int number_of_dynamic_graphs;
 
         std::vector<int> mappingSnapshotsToGraphs;
+        bool new_measures;
+
+		// adjacency lists for all nodes (without filtering) for all snapshots; used for new measures
+        std::vector<std::unordered_map<int, std::set<int>>> rawAdjacencyLists;
 
     public:
 
@@ -71,6 +90,9 @@ namespace dgrminer {
         void printAll();
         void printEncoding();
         void printDimensions();
+
+        void setNewMeasures(bool new_measures);
+        bool getNewMeasures();
 
         int getLabelEncoding(string label);
 
@@ -98,7 +120,7 @@ namespace dgrminer {
         void performSimpleTimeAbstraction();
         void performSimpleNodeTimeAbstraction();
 
-        void addLabeledNodeOccurrence(int label, int changetime, std::vector<labeled_node> & labeled_nodes, bool set_of_graphs, int occurrence);
+        void addLabeledNodeOccurrence(size_t node_index, int label, int changetime, std::vector<labeled_node> & labeled_nodes, bool set_of_graphs, int occurrence);
 
         void computeFrequentVerticesAndRemoveTheInfrequentOnes(int support_as_absolute, double min_confidence, bool compute_confidence, results_crate * results, results_crate_anomalies * results_anomalies,
                                                                int max_absolute_support, bool set_of_graphs, bool search_for_anomalies, double min_anomaly_outlierness);
@@ -121,6 +143,7 @@ namespace dgrminer {
         void debug_printEdges();
         void debug_printNodes();
 
+        std::vector<std::array<int, 8>> getEdges() const;
     };
 
 

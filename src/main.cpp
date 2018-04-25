@@ -22,7 +22,7 @@ static void show_usage(std::string name)
               << std::endl
               << "\t-o OUTPUTFILE\t\tSpecifies the common prefix for output files"
               << std::endl
-              << "\t-s K\t\t\tSpecifies the minimum support; decimal value from [0.0, 1.0]"
+              << "\t-s K\t\t\tSpecifies the minimum support; decimal value from [0.0, 1.0] if old support measure is used"
               << std::endl
               << "\t-c M\t\t\tSpecifies the minimum confidence; decimal value from [0.0, 1.0]; if not specified, the confidence is not computed"
               << std::endl
@@ -31,6 +31,8 @@ static void show_usage(std::string name)
               << "\t-t {bin_nodes,bin_all}\tSpecifies the type of time abstraction"
               << std::endl
               << "\t-a A\t\t\tSwitches to anomaly detection; Only anomalies with outlierness >= A will be outputted; A is a decimal value from [0.0, 1.0]"
+              << std::endl
+              << "\t-m NEW_MEASURES \tUse new support and dynamic measures (currently not allowed for a set of dynamic graphs)."
               << std::endl;
 }
 
@@ -38,7 +40,7 @@ int main(int argc, char* argv[])
 {
     // TEMPORARY CODE:
 
-    run_DGRMiner("data/intro_example", "RES", 0.05, 0.0, true, 10, "", false, 0.0, true);
+    run_DGRMiner("data/enron_multiedges_with_edge_ids", "RES", 4, 0.0, false, 10, "", false, 0.0, true, true);
 //    run_DGRMiner("data/all_resolution_proofs_with_ids.txt", "RES", 0.05, 0.0, true, 10, "", false, 0.0, true);
 //    run_DGRMiner("data/enron_multiedges_with_edge_ids", "RES", 0.10, 0.0, true, 10, "bin_nodes", false, 0.0, true);
 //    run_DGRMiner("data/resolution_01.txt", "RES", 0.05, 0.0, true, 10, "bin_nodes", false, 0.0, true);
@@ -60,6 +62,7 @@ int main(int argc, char* argv[])
     double min_anomaly_outlierness = 0.0;
     bool compute_confidence = false;
     bool search_for_anomalies = false;
+    bool new_measures = false;
     int window_size = 10;
     std::string str_timeabstraction = "";
     bool verbose = false;
@@ -219,6 +222,9 @@ int main(int argc, char* argv[])
                 return 1;
             }
         }
+        else if ((arg == "-m")) {
+            new_measures = true;
+        }
         else {
             sources.push_back(argv[i]);
         }
@@ -236,8 +242,12 @@ int main(int argc, char* argv[])
         return 1;
     }
 
+    if (new_measures && search_for_anomalies) {
+        std::cerr << "New measures are not allowed for search anomalies." << std::endl;
+    }
+
     run_DGRMiner(input_file, output_file, min_support, min_confidence, compute_confidence, window_size,
-                 str_timeabstraction, search_for_anomalies, min_anomaly_outlierness, verbose);
+                 str_timeabstraction, search_for_anomalies, min_anomaly_outlierness, verbose, new_measures);
 
     return 0;
 }

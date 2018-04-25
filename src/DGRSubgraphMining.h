@@ -12,6 +12,7 @@
 
 #include <limits>
 #include <vector>
+#include <unordered_map>
 
 namespace dgrminer
 {
@@ -19,6 +20,7 @@ namespace dgrminer
     {
         std::array<int, 10> elements;
         mutable std::set<int> occurrences;
+        mutable std::unordered_map<int, std::set<std::set<int>>> multiple_occurrences;
     };
 
     struct node_label_changetime
@@ -41,10 +43,12 @@ namespace dgrminer
 
 
     std::set<children_candidate> enumerate(std::vector<AdjacencyListCrate> &adjacency_lists, std::vector<int> &graph_ids, std::vector<std::array<int, PAT___SIZE>> &edge_list,
-                                           std::vector<std::set<int>> &nodes_occupied_by_antecedent, std::vector<std::set<int>> &edges_occupied_by_antecedent);
+                                           std::vector<std::set<int>> &nodes_occupied_by_antecedent, std::vector<std::set<int>> &edges_occupied_by_antecedent, bool new_measures,
+                                           std::unordered_map<int, std::set<std::set<int>>> &multiple_occurrences
+    );
     std::vector<std::array<int, 8>> find_forward_edge_candidates(std::vector<std::vector<int>> &adj_list,
                                                                  std::vector<std::vector<std::array<int, 8>>> &adj_more_info,
-                                                                 int src, std::vector<int> &sequence_of_nodes);
+                                                                 int src, std::vector<int> &sequence_of_nodes, std::vector<int> &real_second_edge_ids);
     std::vector<std::array<int, 8>> find_backward_edge_candidates(std::vector<std::vector<int>> &adj_list,
                                                                   std::vector<std::vector<std::array<int, 8>>> &adj_more_info, int src, int dst,
                                                                   std::vector<int> &real_ids_src, std::vector<int> &real_ids_dst, std::vector<int> &real_ids_dst_ind);
@@ -112,7 +116,14 @@ namespace dgrminer
                            std::vector<std::array<int, 10>> &pattern_edge_list, int support_as_absolute, std::vector<std::array<int, 8>> &starting_edges, results_crate * results, results_crate_anomalies * results_anomalies,
                            int max_absolute_support, double min_confidence, bool compute_confidence, PartialUnion pu, std::vector<int> & antecedent_graph_ids, bool set_of_graphs, bool search_for_anomalies,
                            double min_anomaly_outlierness,
-                           std::string output_file, bool verbose);
+                           std::string output_file, bool verbose, bool new_measures);
+
+
+	template<typename T>
+    inline size_t support(const T &occurrences,
+						  const std::unordered_map<int, std::set<std::set<int>>> &multiple_occurrences,
+						  bool new_measures
+	);
 
 }
 

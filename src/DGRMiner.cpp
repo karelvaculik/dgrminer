@@ -20,8 +20,7 @@ namespace dgrminer
 		{
 
 			cout << "ADJ NODES: " << i << endl;
-			for (size_t j = 0; j < adjacency_lists[i].nodes.size(); j++)
-			{
+			for (size_t j = 0; j < adjacency_lists[i].nodes.size(); j++) {
 				cout << adjacency_lists[i].nodes[j][ADJ_NODES_ID] << ", "
 					 << adjacency_lists[i].nodes[j][ADJ_NODES_CHANGETIME] << ", "
 					 << adjacency_lists[i].nodes[j][ADJ_NODES_LABEL] << endl;
@@ -61,7 +60,7 @@ namespace dgrminer
 
 	void run_DGRMiner(std::string input_file, std::string output_file, double min_support, double min_confidence,
 					  bool compute_confidence, int window_size, std::string str_timeabstraction,
-					  bool search_for_anomalies, double min_anomaly_outlierness, bool verbose)
+					  bool search_for_anomalies, double min_anomaly_outlierness, bool verbose, bool new_measures)
 	{
 		// set abstractions appropriately
 		bool simple_time_abstraction = (str_timeabstraction == "bin_all");
@@ -86,9 +85,14 @@ namespace dgrminer
 		pu.printDimensions();
 		debug_println(verbose, "Number of dynamic graphs: ", pu.getNumberOfDynamicGraphs());
 
+	  	pu.setNewMeasures(new_measures);
 
 		bool set_of_graphs = pu.getNumberOfDynamicGraphs() > 1;
 
+		if (new_measures && set_of_graphs) {
+		  	std::cerr << "New measures are not allowed for a set of graphs." << std::endl;
+		  	return;
+		}
 
 		if (pu.getNumberOfNodes() == 0)
 		{
@@ -98,12 +102,16 @@ namespace dgrminer
 
 		int snapshots = pu.getNumberOfSnapshots();
 		int max_absolute_support = snapshots;
-		if (set_of_graphs)
-		{
+		if (set_of_graphs) {
 			max_absolute_support = pu.queryMappingSnapshotsToGraphs(snapshots - 1) + 1;
 		}
-		// what is the minimum support expressed by an absolute value
-		int min_absolute_support = (int) ceil(max_absolute_support * min_support);
+
+	  	if (!new_measures) {
+		  	min_support = max_absolute_support * min_support;
+		}
+
+	  	// what is the minimum support expressed by an absolute value
+		auto min_absolute_support = (int) ceil(min_support);
 
 		debug_println(verbose, "Max absolute support: ", max_absolute_support);
 		debug_println(verbose, "Number of snapshots: ", snapshots);
@@ -213,29 +221,29 @@ namespace dgrminer
 			DGRSubgraphMining(adjacency_lists, initial_patterns_occurrences[i], init_pattern, min_absolute_support,
 							  starting_edges, &results, &results_anomalies,
 							  max_absolute_support, min_confidence, compute_confidence, pu, antecedent_graph_ids,
-							  set_of_graphs, search_for_anomalies, min_anomaly_outlierness, output_file, verbose);
+							  set_of_graphs, search_for_anomalies, min_anomaly_outlierness, output_file, verbose, new_measures);
 		}
 
 		debug_println(verbose, "FINISHED.");
 	}
 
 
-	void getFrequentInitialPatterns(std::set<labeled_edge_with_occurrences> &edges_set,
+	void  getFrequentInitialPatterns(std::set<labeled_edge_with_occurrences> &edges_set,
 									std::vector<std::array<int, 8>> &initial_patterns,
 									std::vector<std::vector<int>> &initial_patterns_occurrences,
-									int support_as_absolute, bool set_of_graphs, PartialUnion pu)
+									int support_as_absolute, bool set_of_graphs, PartialUnion &pu)
 	{
 		for (auto f : edges_set)
 		{
-			if (set_of_graphs)
-			{
+			if (set_of_graphs) {
 				std::set<int> mapped_occurrences;
 				std::set<int>::iterator it2;
 				for (it2 = f.occurrences.begin(); it2 != f.occurrences.end(); ++it2)
 				{
 					mapped_occurrences.insert(pu.queryMappingSnapshotsToGraphs(*it2));
 				}
-				if (static_cast<int>(mapped_occurrences.size()) >= support_as_absolute &&
+				if (((!pu.getNewMeasures() && static_cast<int>(mapped_occurrences.size()) >= support_as_absolute)
+					|| (pu.getNewMeasures() && static_cast<int>(f.support(pu.getEdges(), true)))) &&
 					(f.elements[ADJ_INFO_SRC_CHANGETIME] >= 0 || f.elements[ADJ_INFO_CHANGETIME] >= 0 ||
 					 f.elements[ADJ_INFO_DST_CHANGETIME] >= 0))
 				{
@@ -249,7 +257,7 @@ namespace dgrminer
 			}
 			else
 			{
-				if (static_cast<int>(f.occurrences.size()) >= support_as_absolute &&
+				if (static_cast<int>(f.support(pu.getEdges(), pu.getNewMeasures())) >= support_as_absolute &&
 					(f.elements[ADJ_INFO_SRC_CHANGETIME] >= 0 || f.elements[ADJ_INFO_CHANGETIME] >= 0 ||
 					 f.elements[ADJ_INFO_DST_CHANGETIME] >= 0))
 				{

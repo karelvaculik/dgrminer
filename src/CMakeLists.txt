@@ -7,8 +7,7 @@ SET(HEADER_FILES
         FileReader.h
         HelperFunctions.h
         PartialUnion.h
-        HelperPrintFunctions.h
-        )
+        OverlapGraph.hpp)
 
 set(SOURCE_FILES
         DGRMiner.cpp
@@ -16,6 +15,7 @@ set(SOURCE_FILES
         FileReader.cpp
         HelperFunctions.cpp
         PartialUnion.cpp
-        HelperPrintFunctions.cpp)
+        HelperPrintFunctions.cpp
+        OverlapGraph.cpp)
 
 add_library(src STATIC ${SOURCE_FILES} ${HEADER_FILES})
