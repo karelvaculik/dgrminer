@@ -1,4 +1,5 @@
 #include "OverlapGraph.hpp"
+#include <algorithm>
 
 namespace dgrminer {
 	int OverlapGraph::addVertex() {

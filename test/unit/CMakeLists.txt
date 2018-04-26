@@ -9,5 +9,5 @@ add_executable(runBasicDGRMinerTests
 
 target_link_libraries(runBasicDGRMinerTests gtest gtest_main)
 target_link_libraries(runBasicDGRMinerTests gmock gmock_main)
-target_link_libraries(runBasicDGRMinerTests fmc)
+#target_link_libraries(runBasicDGRMinerTests fmc)
 target_link_libraries(runBasicDGRMinerTests src)

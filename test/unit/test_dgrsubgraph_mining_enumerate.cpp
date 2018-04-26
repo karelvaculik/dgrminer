@@ -52,10 +52,12 @@ TEST(DGRSubgraphMiningEnumerate, single_graph_single_occurrence)
     std::vector<std::array<int, PAT___SIZE>> pattern_edge_list = {
             {0, 1, 20, -10, 0, 101, 0, 30, -15, 0}
     };
-
+    bool new_measures = false;
+    std::unordered_map<int, std::set<std::set<int>>> multiple_occurrences;
 
     std::set<children_candidate> children = enumerate(adjacency_lists, graph_ids, pattern_edge_list,
-                                                      nodes_occupied_by_antecedent, edges_occupied_by_antecedent);
+                                                      nodes_occupied_by_antecedent, edges_occupied_by_antecedent,
+                                                      new_measures, multiple_occurrences);
 
     std::cout << "children" << std::endl;
     for (auto & x : children)
