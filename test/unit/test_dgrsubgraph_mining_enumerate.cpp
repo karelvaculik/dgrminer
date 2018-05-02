@@ -59,18 +59,6 @@ TEST(DGRSubgraphMiningEnumerate, single_graph_single_occurrence)
                                                       nodes_occupied_by_antecedent, edges_occupied_by_antecedent,
                                                       new_measures, multiple_occurrences);
 
-    std::cout << "children" << std::endl;
-    for (auto & x : children)
-    {
-        std::cout << "{";
-        for (int i = 0; i < x.elements.size(); ++i)
-        {
-            std::cout << x.elements[i] << ", ";
-        }
-        std::cout << "}" << std::endl;
-    }
-
-
     std::array<int, 10> elements_1 = {1, 2, 30, -15, 0, 102, 0, 10, -5, 2};
     std::set<int> occurrences_1 = {0};
     children_candidate children_candidate_1;
@@ -87,11 +75,6 @@ TEST(DGRSubgraphMiningEnumerate, single_graph_single_occurrence)
     children_ground_truth.insert(children_candidate_2);
 
     ASSERT_EQ(children, children_ground_truth);
-
-    println("nodes_occupied_by_antecedent:");
-    println(nodes_occupied_by_antecedent);
-    println("edges_occupied_by_antecedent:");
-    println(edges_occupied_by_antecedent);
 
     std::vector<std::set<int>> nodes_occupied_by_antecedent_ground_truth = {{1, 2}};
     std::vector<std::set<int>> edges_occupied_by_antecedent_ground_truth = {{1}};

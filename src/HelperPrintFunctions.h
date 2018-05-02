@@ -8,6 +8,7 @@
 
 #include <vector>
 #include <set>
+#include <iostream>
 
 using namespace std;
 
@@ -23,6 +24,8 @@ template <typename T1, typename T2> inline void println(const std::pair<T1, T2> 
 template <typename T> inline void print_vector(const std::vector<T> & t);
 template <typename T> inline void print(const std::vector<T> & t);
 template <typename T> inline void println(const std::vector<T> & t);
+template<typename T, std::size_t size> inline void print(const std::array<T, size> & t);
+template<typename T, std::size_t size> inline void println(const std::array<T, size> & t);
 template <typename T> inline void print_set(const std::set<T> &t);
 template <typename T> inline void print(const std::set<T> & t);
 template <typename T> inline void println(const std::set<T> & t);

@@ -153,7 +153,7 @@ namespace dgrminer
 													antecedent_pattern_isolated_node_changetime,
 													antecedent_pattern_isolated_node_id, antecedent_pattern_edges_ADDED,
 													antecedent_pattern_node_id_ADDED,
-													antecedent_pattern_node_labels_ADDED, pu);
+													antecedent_pattern_node_labels_ADDED);
 
 			int antecedent_abs_sup = max_absolute_support; // if the antecedent is empty, then its support is number of snapshots / graphs: (only addition changes)
 			std::set<int> ant_times;
@@ -867,7 +867,6 @@ namespace dgrminer
 	}
 
 
-	// this function removes added nodes and edges, and returns antecedent part from the rest 
 	void compute_antecedent_pattern_from_pattern(std::vector<std::array<int, PAT___SIZE>> &edge_list,
 												 std::vector<std::array<int, PAT___SIZE>> &antecedent_pattern_edges,
 												 std::vector<int> &isolated_nodes_label,
@@ -875,8 +874,7 @@ namespace dgrminer
 												 std::vector<int> &isolated_nodes_id,
 												 std::vector<std::array<int, PAT___SIZE>> &antecedent_pattern_edges_ADDED,
 												 std::vector<int> &antecedent_pattern_node_id_ADDED,
-												 std::vector<int> &antecedent_pattern_node_labels_ADDED,
-												 PartialUnion pu)
+												 std::vector<int> &antecedent_pattern_node_labels_ADDED)
 	{
 		std::vector<int> isolated_nodes_label_local;
 		std::vector<int> isolated_nodes_changetime_local;
@@ -1597,6 +1595,7 @@ namespace dgrminer
 		std::vector<int> antecedent_occurrences;
 
 		// this is used for enumerating antecedent if not searching for anomalies:
+		// for each label/changetime pair, there is a number of occurrences of such a pair
 		std::multiset<node_label_changetime> isolated_nodes_counts;
 		for (size_t i = 0; i < antecedent_pattern_isolated_node_labels.size(); i++)
 		{
@@ -1636,12 +1635,17 @@ namespace dgrminer
 						nlc.label = pu.getAntecedentLabel(adjacency_lists[g_id].nodes[i][ADJ_NODES_LABEL]); // label
 						nlc.changetime = pu.getAntecedentChangetime(adjacency_lists[g_id].nodes[i][ADJ_NODES_CHANGETIME]); // changetime
 						adj_list_nodes_count.insert(nlc);
+
+						// TODO: use NLC as key to map in order to save occurrences (i.e. real ids of vertices)
+						// i is real id
 					}
 				}
 
 				bool contains_isolated_vertices = true;
 				for (auto it = isolated_nodes_counts.begin(); it != isolated_nodes_counts.end(); ++it)
 				{
+					// for each isolated vertex (i.e. label/changetime pair), check how many times it was found
+					// if there are less separate occurrences (those that do not overlap with pattern) that the
 					if (adj_list_nodes_count.count(*it) < isolated_nodes_counts.count(*it))
 					{
 						contains_isolated_vertices = false;
@@ -1652,6 +1656,7 @@ namespace dgrminer
 				{
 					// we found the isolated vertices:
 					antecedent_occurrences.push_back(g_id);
+
 
 					if (search_for_anomalies)
 					{
@@ -1754,6 +1759,8 @@ namespace dgrminer
 							// if we found the occurrence of the whole pattern:
 							if (current_index >= antecedent_pattern_edges.size())
 							{
+								// TODO: vytahnout real ids of mapped antecedent-pattern-edges' vertices
+
 								// now try to map the isolated vertices:
 								std::multiset<node_label_changetime> adj_list_nodes_count;
 								for (size_t i = 0; i < adjacency_lists[g_id].nodes.size(); i++)
@@ -1767,6 +1774,9 @@ namespace dgrminer
 										nlc.label = pu.getAntecedentLabel(adjacency_lists[g_id].nodes[i][ADJ_NODES_LABEL]); // label
 										nlc.changetime = pu.getAntecedentChangetime(adjacency_lists[g_id].nodes[i][ADJ_NODES_CHANGETIME]); // changetime
 										adj_list_nodes_count.insert(nlc);
+
+										// TODO: use NLC as key to map in order to save occurrences (i.e. real ids of vertices)
+										// i is real id
 									}
 								}
 
@@ -1792,6 +1802,7 @@ namespace dgrminer
 									{
 										// if we are searching for anomalies, the procedure is more complicated - we are interested in the positions of the isolated vertices:
 
+										// TODO nasledujici cast kodu vzit pro ziskani real ids of mapped antecedent-pattern-edges' vertices
 										std::set<int> occupied_node_ids_in_adj_list;
 										for (size_t i = 0; i < antecedent_pattern_edges.size(); i++)
 										{

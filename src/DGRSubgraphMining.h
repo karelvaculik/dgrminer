@@ -62,6 +62,17 @@ namespace dgrminer
                               int anomaly_id_of_explanation_pattern, double anomaly_outlierness, bool verbose);
 
 
+    /**
+     * This function removes added nodes and edges, and returns antecedent part from the rest
+     * @param edge_list edge list of the pattern
+     * @param antecedent_pattern_edges list of antecedent edges (output param)
+     * @param isolated_nodes_label list of labels of isolated nodes (output param)
+     * @param isolated_nodes_changetime list of changetimes of isolated nodes (output param)
+     * @param isolated_nodes_id list of ids of isolated nodes (output param)
+     * @param antecedent_pattern_edges_ADDED list of pattern edges that represent addition (output param)
+     * @param antecedent_pattern_isolated_node_id_ADDED list of ids of pattern nodes that represent addition (output param)
+     * @param antecedent_pattern_isolated_node_labels_ADDED list of labels of pattern nodes that represent addition (output param)
+     */
     void compute_antecedent_pattern_from_pattern(std::vector<std::array<int, PAT___SIZE>> &edge_list,
                                                  std::vector<std::array<int, PAT___SIZE>> &antecedent_pattern_edges,
                                                  std::vector<int> &isolated_nodes_label,
@@ -69,8 +80,7 @@ namespace dgrminer
                                                  std::vector<int> &isolated_nodes_id,
                                                  std::vector<std::array<int, PAT___SIZE>> &antecedent_pattern_edges_ADDED,
                                                  std::vector<int> &antecedent_pattern_isolated_node_id_ADDED,
-                                                 std::vector<int> &antecedent_pattern_isolated_node_labels_ADDED,
-                                                 PartialUnion pu);
+                                                 std::vector<int> &antecedent_pattern_isolated_node_labels_ADDED);
 
     void find_addition_edges(AdjacencyListCrate & adjacency_list, std::vector<std::array<int, PAT___SIZE>> & antecedent_pattern_edges_ADDED,
                              std::map<char, int> & from_pattern_id_to_adj_id_map, int num_of_nondummy_nodes, std::vector<std::set<int_pair>> & edge_mapping_sets,
