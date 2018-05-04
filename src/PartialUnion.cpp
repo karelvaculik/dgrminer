@@ -734,6 +734,7 @@ namespace dgrminer
 					}
 					// compute confidence of the pattern:
 					double confidence = ((double)labeled_nodes[i].support(new_measures)) / ((double)antecedent_abs_support);
+
 					
 					// if the confidence is high enough:
 					if (confidence >= min_confidence)

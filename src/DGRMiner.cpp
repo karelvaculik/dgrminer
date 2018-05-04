@@ -89,11 +89,6 @@ namespace dgrminer
 
 		bool set_of_graphs = pu.getNumberOfDynamicGraphs() > 1;
 
-		if (new_measures && set_of_graphs) {
-		  	std::cerr << "New measures are not allowed for a set of graphs." << std::endl;
-		  	return;
-		}
-
 		if (pu.getNumberOfNodes() == 0)
 		{
 			debug_println(verbose, "The union graph has no nodes! Quitting...");
@@ -102,7 +97,7 @@ namespace dgrminer
 
 		int snapshots = pu.getNumberOfSnapshots();
 		int max_absolute_support = snapshots;
-		if (set_of_graphs) {
+		if (set_of_graphs && !new_measures) {
 			max_absolute_support = pu.queryMappingSnapshotsToGraphs(snapshots - 1) + 1;
 		}
 
@@ -243,7 +238,7 @@ namespace dgrminer
 					mapped_occurrences.insert(pu.queryMappingSnapshotsToGraphs(*it2));
 				}
 				if (((!pu.getNewMeasures() && static_cast<int>(mapped_occurrences.size()) >= support_as_absolute)
-					|| (pu.getNewMeasures() && static_cast<int>(f.support(pu.getEdges(), true)))) &&
+					|| (pu.getNewMeasures() && static_cast<int>(f.support(pu.getEdges(), true)) >= support_as_absolute)) &&
 					(f.elements[ADJ_INFO_SRC_CHANGETIME] >= 0 || f.elements[ADJ_INFO_CHANGETIME] >= 0 ||
 					 f.elements[ADJ_INFO_DST_CHANGETIME] >= 0))
 				{

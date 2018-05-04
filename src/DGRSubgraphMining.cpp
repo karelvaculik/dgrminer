@@ -82,11 +82,13 @@ namespace dgrminer
 		std::vector<std::set<int>> nodes_occupied_by_antecedent;
 		std::vector<std::set<int>> edges_occupied_by_antecedent;
 
-	  	std::unordered_map<int, std::set<std::set<int>>> multiple_occurrences;
+	  	std::unordered_map<int, std::set<std::set<int>>> multiple_pattern_occurrences;
+	  	std::unordered_map<int, std::set<std::set<int>>> multiple_antecedent_occurrences;
 
 		// find all children of the current pattern
 		std::set<children_candidate> children = enumerate(adjacency_lists, graph_ids, pattern_edge_list,
-                                                          nodes_occupied_by_antecedent, edges_occupied_by_antecedent, new_measures, multiple_occurrences);
+                                                          nodes_occupied_by_antecedent, edges_occupied_by_antecedent, new_measures,
+														  multiple_pattern_occurrences, multiple_antecedent_occurrences);
 
 		// remove infrequent children:
 		for (auto itr = children.begin(); itr != children.end();) {
@@ -102,7 +104,7 @@ namespace dgrminer
 					(new_measures && (support<std::set<int>>(
 						(*itr).occurrences,
 						(*itr).multiple_occurrences,
-						true
+						new_measures
 					) < support_as_absolute))) {
 				  	children.erase(itr++);
 				}
@@ -122,9 +124,7 @@ namespace dgrminer
 	  	int pattern_support_absolute = 0;
 
 
-		pattern_support_absolute = (int) support<std::vector<int>>(graph_ids, multiple_occurrences, new_measures);
-
-		if (!new_measures && set_of_graphs)
+		if (set_of_graphs)
 		{
 			std::set<int> mapped_set_of_graphs;
 			for (int id : graph_ids)
@@ -132,7 +132,9 @@ namespace dgrminer
 				mapped_set_of_graphs.insert(pu.queryMappingSnapshotsToGraphs(id));
 			}
 
-		  	pattern_support_absolute = (int)mapped_set_of_graphs.size();
+		  	pattern_support_absolute = (int) support<std::vector<int>>(graph_ids, multiple_pattern_occurrences, new_measures);
+		} else {
+		  	pattern_support_absolute = (int) support<std::vector<int>>(graph_ids, multiple_pattern_occurrences, new_measures);
 		}
 
 		std::vector<int> ant_occurrences;
@@ -171,15 +173,17 @@ namespace dgrminer
 													   antecedent_pattern_isolated_node_changetime, pu, debugging,
 													   search_for_anomalies,
 													   nodes_occupied_by_antecedent, edges_occupied_by_antecedent,
-													   anomaly_patterns);
+													   anomaly_patterns,
+													   multiple_antecedent_occurrences,
+													   new_measures);
 
 				// if there are some non-addition elements, compute antecedent support from the occurrences
 				// (otherwise we use number of snapshots)
 				if (antecedent_pattern_edges.size() != 0 || antecedent_pattern_isolated_node_id.size() != 0)
 				{
-					for (size_t i = 0; i < graph_ids.size(); i++)
-					{
-						if (set_of_graphs)
+
+					for (size_t i = 0; i < graph_ids.size(); i++) {
+						if (set_of_graphs && !new_measures)
 						{
 							ant_times.insert(pu.queryMappingSnapshotsToGraphs(graph_ids[i]));
 						}
@@ -188,9 +192,10 @@ namespace dgrminer
 							ant_times.insert(graph_ids[i]);
 						}
 					}
-					for (size_t i = 0; i < ant_occurrences.size(); i++)
+
+				  	for (size_t i = 0; i < ant_occurrences.size(); i++)
 					{
-						if (set_of_graphs)
+						if (set_of_graphs && !new_measures)
 						{
 							ant_times.insert(pu.queryMappingSnapshotsToGraphs(ant_occurrences[i]));
 						}
@@ -199,7 +204,12 @@ namespace dgrminer
 							ant_times.insert(ant_occurrences[i]);
 						}
 					}
-					antecedent_abs_sup = (int)ant_times.size();
+
+					antecedent_abs_sup = (int)support(
+						ant_times,
+						multiple_antecedent_occurrences,
+						new_measures
+					);
 				}
 			}
 			else
@@ -216,11 +226,10 @@ namespace dgrminer
 
 			double confidence = ((double)pattern_support_absolute) / ((double)antecedent_abs_sup);
 
-            debug_println(verbose, "SUP: ", pattern_support_absolute, ", ANT SUP: ", antecedent_abs_sup,
-                          ", CONFIDENCE: ", confidence);
-
 			if (confidence >= min_confidence)
 			{
+			  debug_println(verbose, "SUP: ", pattern_support_absolute, ", ANT SUP: ", antecedent_abs_sup,
+							", CONFIDENCE: ", confidence);
 				double support_relative = (double)pattern_support_absolute / (double)max_absolute_support;
 				save_pattern(pattern_edge_list, graph_ids, results, set_of_graphs, pu, pattern_support_absolute,
                              support_relative, ant_times, confidence, verbose);
@@ -295,7 +304,8 @@ namespace dgrminer
                                            std::vector<std::array<int, PAT___SIZE>> &pattern_edge_list,
                                            std::vector<std::set<int>> &nodes_occupied_by_antecedent,
                                            std::vector<std::set<int>> &edges_occupied_by_antecedent, bool new_measures,
-										   std::unordered_map<int, std::set<std::set<int>>> &multiple_occurrences)
+										   std::unordered_map<int, std::set<std::set<int>>> &multiple_pattern_occurrences,
+										   std::unordered_map<int, std::set<std::set<int>>> &multiple_antecedent_occurrences)
 	{
         // this functions is used for finding children candidates (return value)
         // adjacency_lists - adjacency list for each graph
@@ -379,21 +389,15 @@ namespace dgrminer
 						index_in_pattern_edge_list++;
 
 						// do depth first search
-						while (true)
-						{
+						while (true) {
 							// if we found the occurrence of the whole pattern:
 							if (index_in_pattern_edge_list >= pattern_edge_list.size())
 							{
 								// save antecedent nodes and edges (i.e. those that are not addition changes) to edges_occupied_by_antecedent and edges_occupied_by_antecedent
 								// (used for anomalies)
-							  	std::set<int> occurrence_vertexes;
-
 								for (int i = 0; i < pattern_edge_list.size(); i++) {
 									int n_1 = real_ids_src[i];
 									int n_2 = real_ids_dst_ind[i];
-
-									occurrence_vertexes.insert(n_1);
-								  	occurrence_vertexes.insert(real_ids_dst[i]);
 
 									// all elements of the frequent pattern should be occupied
 									nodes_occupied_by_antecedent[g_id].insert(n_1);
@@ -401,7 +405,29 @@ namespace dgrminer
 									edges_occupied_by_antecedent[g_id].insert(adj_edge_info[n_1][n_2][ADJ_INFO_ID]);
 								}
 
-							  	multiple_occurrences[g_id].insert(occurrence_vertexes);
+							  	std::set<int> pattern_occurrence_vertexes;
+
+							  	// save pattern occurrence and antecedent occurrence in order to properly calculate new measures
+							  	if (new_measures) {
+								  	std::set<int> antecedent_vertexes;
+								  	for (int i = 0; i < pattern_edge_list.size(); ++i) {
+									  	int n_1 = real_ids_src[i];
+
+									  	pattern_occurrence_vertexes.insert(n_1);
+									  	pattern_occurrence_vertexes.insert(real_ids_dst[i]);
+
+									  	if (pattern_edge_list[i][PAT_SRC_CHANGETIME] != 0) {
+											antecedent_vertexes.insert(n_1);
+										}
+
+									  	if (pattern_edge_list[i][PAT_DST_CHANGETIME] != 0) {
+											antecedent_vertexes.insert(real_ids_dst[i]);
+										}
+									}
+
+								  	multiple_pattern_occurrences[g_id].insert(pattern_occurrence_vertexes);
+								  	multiple_antecedent_occurrences[g_id].insert(antecedent_vertexes);
+								}
 
 								std::vector<int> right_most_path_occurrence;
 								for (size_t i = 0; i < right_most_path.size(); i++)
@@ -452,14 +478,14 @@ namespace dgrminer
 											(it->occurrences).insert(g_id);
 
 											if (new_measures) {
-											  	it->multiple_occurrences[g_id].insert(occurrence_vertexes);
+											  	it->multiple_occurrences[g_id].insert(pattern_occurrence_vertexes);
 											}
 										}
 										else {
 											cc.occurrences.insert(g_id);
 
 											if (new_measures) {
-											  	cc.multiple_occurrences[g_id].insert(occurrence_vertexes);
+											  	cc.multiple_occurrences[g_id].insert(pattern_occurrence_vertexes);
 											}
 
 										  	children_candidates.insert(cc);
@@ -477,7 +503,7 @@ namespace dgrminer
 
 									for (int j = 0; j < edge_candidates.size(); j++)
 									{
-									  	std::set<int> child_occurrence_vertexes = occurrence_vertexes;
+									  	std::set<int> child_occurrence_vertexes = pattern_occurrence_vertexes;
 									  	child_occurrence_vertexes.insert(right_most_path_occurrence[i]);
 									  	child_occurrence_vertexes.insert(real_second_edge_ids[j]);
 
@@ -754,7 +780,6 @@ namespace dgrminer
 		results->saved_instances++;
 
 		std::set<int> already_saved_node_ids;
-
         debug_println(verbose, "FREQUENT PATTERN ", results->saved_instances, ", SUP: ", support_relative, " (",
                       pattern_support_absolute, " INSTANCES), CONF: ", confidence);
 
@@ -1577,6 +1602,64 @@ namespace dgrminer
 	}
 
 
+	const std::vector<std::vector<int>> combinations(
+		const std::vector<int>& input,
+		size_t combination_size
+	) {
+	  	std::vector<std::vector<int>> results;
+	  	std::vector<bool> v(input.size());
+	  	std::fill(v.begin(), v.begin() + combination_size, true);
+
+	  	do {
+			std::vector<int> result;
+			for (int i = 0; i < input.size(); ++i) {
+		  		if (v[i]) {
+					result.push_back(input[i]);
+				}
+		  	}
+			results.push_back(result);
+		} while (std::prev_permutation(v.begin(), v.end()));
+
+	  	return results;
+	}
+
+
+	void map_isolated_nodes(
+		std::vector<std::vector<int>> &results,
+		const std::multiset<node_label_changetime>& isolated_nodes_counts,
+		const std::map<node_label_changetime, std::vector<int>>::iterator& occurrences_iterator,
+		const std::map<node_label_changetime, std::vector<int>>::iterator& end_occurrences_iterator,
+		std::vector<int>& tmp
+	) {
+	  	//check whether end of mapped node labels was reached and backtrack
+	  	if (occurrences_iterator == end_occurrences_iterator) {
+			results.push_back(tmp);
+			return;
+		}
+
+	  	// list all possible combinations of real ids
+	  	const std::vector<std::vector<int>> all_combinations = combinations(
+	  		occurrences_iterator->second,
+			isolated_nodes_counts.count(occurrences_iterator->first)
+		);
+
+	  	// move to next item mapped node labels
+	  	for (auto const &combination : all_combinations) {
+			tmp.insert(tmp.end(), combination.cbegin(), combination.cend());
+
+		  	map_isolated_nodes(
+				results,
+				isolated_nodes_counts,
+				std::next(occurrences_iterator),
+				end_occurrences_iterator,
+				tmp
+			);
+
+			tmp.resize(tmp.size() - combination.size());
+		}
+	}
+
+
 	std::vector<int> enumerate_antecedent(std::vector<AdjacencyListCrate> &adjacency_lists,
 										  std::vector<int> &graph_ids,
 										  std::vector<std::array<int, PAT___SIZE>> &antecedent_pattern_edges,
@@ -1589,7 +1672,9 @@ namespace dgrminer
 										  PartialUnion pu, bool debug, bool search_for_anomalies,
 										  std::vector<std::set<int>> &nodes_occupied_by_antecedent,
 										  std::vector<std::set<int>> &edges_occupied_by_antecedent,
-										  std::set<anomaly_pattern_with_occurrences> &anomaly_patterns)
+										  std::set<anomaly_pattern_with_occurrences> &anomaly_patterns,
+										  std::unordered_map<int, std::set<std::set<int>>> &multiple_antecedent_occurrences,
+										  bool new_measures)
 	{
 
 		std::vector<int> antecedent_occurrences;
@@ -1626,6 +1711,7 @@ namespace dgrminer
 			{
 				// try to find only the isolated vertices:
 				std::multiset<node_label_changetime> adj_list_nodes_count;
+			  	std::map<node_label_changetime, std::vector<int>> occurrences_map;
 				for (size_t i = 0; i < adjacency_lists[g_id].nodes.size(); i++)
 				{
 					bool is_vertex_occcupied = nodes_occupied_by_antecedent[g_id].find(i) != nodes_occupied_by_antecedent[g_id].end();
@@ -1636,8 +1722,8 @@ namespace dgrminer
 						nlc.changetime = pu.getAntecedentChangetime(adjacency_lists[g_id].nodes[i][ADJ_NODES_CHANGETIME]); // changetime
 						adj_list_nodes_count.insert(nlc);
 
-						// TODO: use NLC as key to map in order to save occurrences (i.e. real ids of vertices)
-						// i is real id
+						// mapping of real ids to nlc
+					  	occurrences_map[nlc].push_back(i);
 					}
 				}
 
@@ -1657,6 +1743,18 @@ namespace dgrminer
 					// we found the isolated vertices:
 					antecedent_occurrences.push_back(g_id);
 
+					if (new_measures) {
+						std::vector<std::vector<int>> results;
+						std::vector<int> tmp;
+
+						// find all possible mappings of nodes
+						map_isolated_nodes(results, isolated_nodes_counts, occurrences_map.begin(), occurrences_map.end(), tmp);
+
+						for (auto const &result : results) {
+							std::set<int> antecedent_occurrence(result.begin(), result.end());
+							multiple_antecedent_occurrences[g_id].insert(antecedent_occurrence);
+						}
+					}
 
 					if (search_for_anomalies)
 					{
@@ -1759,10 +1857,9 @@ namespace dgrminer
 							// if we found the occurrence of the whole pattern:
 							if (current_index >= antecedent_pattern_edges.size())
 							{
-								// TODO: vytahnout real ids of mapped antecedent-pattern-edges' vertices
-
-								// now try to map the isolated vertices:
+							  	// now try to map the isolated vertices:
 								std::multiset<node_label_changetime> adj_list_nodes_count;
+							  	std::map<node_label_changetime, std::vector<int>> occurrences_map;
 								for (size_t i = 0; i < adjacency_lists[g_id].nodes.size(); i++)
 								{
 									bool is_vertex_occcupied = nodes_occupied_by_antecedent[g_id].find(i) != nodes_occupied_by_antecedent[g_id].end();
@@ -1775,8 +1872,8 @@ namespace dgrminer
 										nlc.changetime = pu.getAntecedentChangetime(adjacency_lists[g_id].nodes[i][ADJ_NODES_CHANGETIME]); // changetime
 										adj_list_nodes_count.insert(nlc);
 
-										// TODO: use NLC as key to map in order to save occurrences (i.e. real ids of vertices)
-										// i is real id
+									  	// mapping of real ids to nlc
+									  	occurrences_map[nlc].push_back(i);
 									}
 								}
 
@@ -1798,14 +1895,33 @@ namespace dgrminer
 									// this variable is used for breaking the outer loops:
 									occurrence_found = true;
 
+									if (new_measures) {
+									  	std::set<int> occurrence_vertexes;
+									  	for (size_t i = 0; i < antecedent_pattern_edges.size(); i++) {
+										  	occurrence_vertexes.insert(real_ids_src[i]);
+										  	occurrence_vertexes.insert(real_ids_dst[i]);
+										}
+
+									  	std::vector<std::vector<int>> results;
+									  	std::vector<int> tmp;
+
+									  	// find all possible mappings of nodes
+									  	map_isolated_nodes(results, isolated_nodes_counts, occurrences_map.begin(), occurrences_map.end(), tmp);
+
+									  	for (auto const &result : results) {
+											std::set<int> antecedent_occurrence(result.begin(), result.end());
+										  	antecedent_occurrence.insert(occurrence_vertexes.begin(), occurrence_vertexes.end());
+											multiple_antecedent_occurrences[g_id]insert(antecedent_occurrence);
+										}
+									}
+
+
 									if (search_for_anomalies)
 									{
 										// if we are searching for anomalies, the procedure is more complicated - we are interested in the positions of the isolated vertices:
 
-										// TODO nasledujici cast kodu vzit pro ziskani real ids of mapped antecedent-pattern-edges' vertices
-										std::set<int> occupied_node_ids_in_adj_list;
-										for (size_t i = 0; i < antecedent_pattern_edges.size(); i++)
-										{
+									  	std::set<int> occupied_node_ids_in_adj_list;
+									  	for (size_t i = 0; i < antecedent_pattern_edges.size(); i++) {
 											occupied_node_ids_in_adj_list.insert(real_ids_src[i]);
 											occupied_node_ids_in_adj_list.insert(real_ids_dst[i]);
 										}

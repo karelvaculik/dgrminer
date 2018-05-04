@@ -44,7 +44,8 @@ namespace dgrminer
 
     std::set<children_candidate> enumerate(std::vector<AdjacencyListCrate> &adjacency_lists, std::vector<int> &graph_ids, std::vector<std::array<int, PAT___SIZE>> &edge_list,
                                            std::vector<std::set<int>> &nodes_occupied_by_antecedent, std::vector<std::set<int>> &edges_occupied_by_antecedent, bool new_measures,
-                                           std::unordered_map<int, std::set<std::set<int>>> &multiple_occurrences
+										   std::unordered_map<int, std::set<std::set<int>>> &multiple_pattern_occurrences,
+										   std::unordered_map<int, std::set<std::set<int>>> &multiple_antecedent_occurrences
     );
     std::vector<std::array<int, 8>> find_forward_edge_candidates(std::vector<std::vector<int>> &adj_list,
                                                                  std::vector<std::vector<std::array<int, 8>>> &adj_more_info,
@@ -120,7 +121,9 @@ namespace dgrminer
                                           PartialUnion pu, bool debugging, bool search_for_anomalies,
                                           std::vector<std::set<int>> &nodes_occupied_by_antecedent,
                                           std::vector<std::set<int>> &edges_occupied_by_antecedent,
-                                          std::set<anomaly_pattern_with_occurrences> &anomaly_patterns);
+                                          std::set<anomaly_pattern_with_occurrences> &anomaly_patterns,
+										  std::unordered_map<int, std::set<std::set<int>>> &multiple_antecedent_occurrences,
+										  bool new_measures);
 
     void DGRSubgraphMining(std::vector<AdjacencyListCrate> &adjacency_lists, std::vector<int> & graph_ids,
                            std::vector<std::array<int, 10>> &pattern_edge_list, int support_as_absolute, std::vector<std::array<int, 8>> &starting_edges, results_crate * results, results_crate_anomalies * results_anomalies,
@@ -135,6 +138,18 @@ namespace dgrminer
 						  bool new_measures
 	);
 
+	const std::vector<std::vector<int>> combinations(
+		const std::vector<int>& input,
+		size_t combination_size
+	);
+
+	void map_isolated_nodes(
+		std::vector<std::vector<int>> &results,
+		const std::multiset<node_label_changetime>& isolated_nodes_counts,
+		const std::map<node_label_changetime, std::vector<int>>::iterator& occurrences_iterator,
+		const std::map<node_label_changetime, std::vector<int>>::iterator& end_occurrences_iterator,
+		std::vector<int>& tmp
+	);
 }
 
 

@@ -39,9 +39,9 @@ static void show_usage(std::string name)
 int main(int argc, char* argv[])
 {
     // experiments as in ITAT paper (data may be a little different)
-    run_DGRMiner("data/enron_multiedges_with_edge_ids_keep", "RES", 0.10, 0.0, true, 10, "bin_nodes", false, 0.0, true, false);
+    //run_DGRMiner("data/enron_multiedges_with_edge_ids_keep", "RES", 0.10, 0.0, true, 10, "bin_nodes", false, 0.0, true, false);
 //    run_DGRMiner("data/enron_multiedges_with_edge_ids_del", "RES", 0.10, 0.0, true, 10, "bin_nodes", false, 0.0, true, false);
-//    run_DGRMiner("data/all_resolution_proofs_with_ids.txt", "RES", 0.05, 0.0, true, 10, "", false, 0.0, true, false);
+     run_DGRMiner("data/all_resolution_proofs_with_ids.txt", "RES", 10, 0.2, true, 10, "", false, 0.0, true, true);
 //    run_DGRMiner("data/all_resolution_proofs_with_ids.txt", "RES", 0.05, 0.0, true, 10, "bin_all", false, 0.0, true, false);
     if (true)
         return 0;
