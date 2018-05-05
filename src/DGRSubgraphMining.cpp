@@ -1911,7 +1911,7 @@ namespace dgrminer
 									  	for (auto const &result : results) {
 											std::set<int> antecedent_occurrence(result.begin(), result.end());
 										  	antecedent_occurrence.insert(occurrence_vertexes.begin(), occurrence_vertexes.end());
-											multiple_antecedent_occurrences[g_id]insert(antecedent_occurrence);
+											multiple_antecedent_occurrences[g_id].insert(antecedent_occurrence);
 										}
 									}
 
