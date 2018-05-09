@@ -39,12 +39,13 @@ static void show_usage(std::string name)
 int main(int argc, char* argv[])
 {
     // experiments as in ITAT paper (data may be a little different)
-    //run_DGRMiner("data/enron_multiedges_with_edge_ids_keep", "RES", 0.10, 0.0, true, 10, "bin_nodes", false, 0.0, true, false);
-//    run_DGRMiner("data/enron_multiedges_with_edge_ids_del", "RES", 0.10, 0.0, true, 10, "bin_nodes", false, 0.0, true, false);
-//     run_DGRMiner("data/all_resolution_proofs_with_ids.txt", "RES", 10, 0.2, true, 10, "", false, 0.0, true, true);
-//    run_DGRMiner("data/all_resolution_proofs_with_ids.txt", "RES", 0.05, 0.0, true, 10, "bin_all", false, 0.0, true, false);
-    run_DGRMiner("data/synth_graph_one_with_ids.txt", "RES", 0.10, 0.0, true, 10, "bin_all", false, 0.0, true, false);
-//    run_DGRMiner("data/synth_graphs_20_with_ids.txt", "RES", 0.10, 0.0, true, 10, "", false, 0.0, true, false);
+    run_DGRMiner("data/enron_multiedges_with_edge_ids_del", "RES", 510    , 0.0, true, 10, "bin_nodes", false, 0.0, true, true, true);
+    //run_DGRMiner("data/enron_multiedges_with_edge_ids_del", "RES", 170, 0.0, true, 10, "bin_nodes", false, 0.0, true, true, true);
+    //run_DGRMiner("data/all_resolution_proofs_with_ids.txt", "RES", 6, 0.3, true, 10, "bin_all", false, 0.0, true, true, false);
+    //run_DGRMiner("data/all_resolution_proofs_with_ids.txt", "RES", 0.05, 0.0, true, 10, "bin_all", false, 0.0, true, false);
+    //run_DGRMiner("data/synth_graph_one_with_ids.txt", "RES", 10, 0.2, true, 10, "bin_all", false, 0.0, true, true, false);
+    //run_DGRMiner("data/synth_graphs_20_with_ids.txt", "RES", 10, 0.0, true, 10, "", false, 0.0, true, true, false);
+
     if (true)
         return 0;
 
@@ -64,6 +65,7 @@ int main(int argc, char* argv[])
     bool compute_confidence = false;
     bool search_for_anomalies = false;
     bool new_measures = false;
+  	bool heuristics = false;
     int window_size = 10;
     std::string str_timeabstraction = "";
     bool verbose = false;
@@ -226,6 +228,9 @@ int main(int argc, char* argv[])
         else if ((arg == "-m")) {
             new_measures = true;
         }
+		else if ((arg == "-h")) {
+		    heuristics = true;
+        }
         else {
             sources.push_back(argv[i]);
         }
@@ -248,7 +253,7 @@ int main(int argc, char* argv[])
     }
 
     run_DGRMiner(input_file, output_file, min_support, min_confidence, compute_confidence, window_size,
-                 str_timeabstraction, search_for_anomalies, min_anomaly_outlierness, verbose, new_measures);
+                 str_timeabstraction, search_for_anomalies, min_anomaly_outlierness, verbose, new_measures, heuristics);
 
     return 0;
 }

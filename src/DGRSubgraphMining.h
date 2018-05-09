@@ -129,7 +129,7 @@ namespace dgrminer
                            std::vector<std::array<int, 10>> &pattern_edge_list, int support_as_absolute, std::vector<std::array<int, 8>> &starting_edges, results_crate * results, results_crate_anomalies * results_anomalies,
                            int max_absolute_support, double min_confidence, bool compute_confidence, PartialUnion pu, std::vector<int> & antecedent_graph_ids, bool set_of_graphs, bool search_for_anomalies,
                            double min_anomaly_outlierness,
-                           std::string output_file, bool verbose, bool new_measures);
+                           std::string output_file, bool verbose, bool new_measures, bool heuristic_mis);
 
 
 	template<typename T>

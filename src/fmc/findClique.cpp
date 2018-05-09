@@ -83,13 +83,14 @@ int maxClique( CGraphIO& gio, int l_bound, vector<int>& max_clique_data )
 	vector <int>* ptrVertex = gio.GetVerticesPtr();
 	vector <int>* ptrEdge = gio.GetEdgesPtr();
 	vector <int> U;
-   	U.reserve(gio.GetVertexCount());
-   	vector<int> max_clique_data_inter;
-   	max_clique_data_inter.reserve(gio.GetVertexCount());
-   	max_clique_data.reserve(gio.GetVertexCount());
+   U.reserve(gio.GetVertexCount());
+   vector<int> max_clique_data_inter;
+   max_clique_data_inter.reserve(gio.GetVertexCount());
+   max_clique_data.reserve(gio.GetVertexCount());
 	int maxClq = l_bound;
-   	int prev_maxClq;
+   int prev_maxClq;
 
+	cout << "Computing Max Clique... with lower bound " << maxClq << endl;
 	pruned1 = 0;
 	pruned2 = 0;
 	pruned3 = 0;

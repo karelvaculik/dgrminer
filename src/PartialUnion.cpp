@@ -252,12 +252,17 @@ namespace dgrminer
 		}
 	}
 
-	void PartialUnion::setNewMeasures(bool new_measures) {
+	void PartialUnion::setNewMeasuresAndHeuristics(bool new_measures, bool heuristic_mis) {
 	 	this->new_measures = new_measures;
+	 	this->heuristic_mis = heuristic_mis;
 	}
 
 	bool PartialUnion::getNewMeasures() {
 	  	return new_measures;
+	}
+
+	bool PartialUnion::getHeuristicMIS() {
+  		return heuristic_mis;
 	}
 
 	PartialUnion::PartialUnion()
@@ -563,13 +568,14 @@ namespace dgrminer
 
 	size_t labeled_edge_with_occurrences::support(
 		const std::vector<std::array<int, 8>>& edges,
-		bool new_measures
+		bool new_measures,
+		bool heuristic_mis
 	) const {
 		if (new_measures) {
 		  	if (!new_support.second) {
 			  	size_t current_support = 0;
 			  	for (auto const &snapshotId : occurrences) {
-				  	OverlapGraph og;
+				  	OverlapGraph og(heuristic_mis);
 				  	std::unordered_map<int, int> mapping;
 
 				  	for (auto const &occurrence : multiple_occurrences.at(snapshotId)) {
@@ -974,13 +980,13 @@ namespace dgrminer
 					mapped_occurrences.insert(queryMappingSnapshotsToGraphs(*it2));
 				}
 
-				return (((!new_measures && mapped_occurrences.size() < support_as_absolute) || (new_measures && it->support(edges, true) < support_as_absolute))
+				return (((!new_measures && mapped_occurrences.size() < support_as_absolute) || (new_measures && it->support(edges, true, heuristic_mis) < support_as_absolute))
 					&& (it->elements[ADJ_INFO_CHANGETIME] >= 0 || it->elements[ADJ_INFO_SRC_CHANGETIME] >= 0 || it->elements[ADJ_INFO_DST_CHANGETIME] >= 0));
 			}
 			else
 			{
 				// only change edges can be infrequent (i.e. any of their changetimes >= 0)
-				return (it->support(edges, new_measures) < support_as_absolute
+				return (it->support(edges, new_measures, heuristic_mis) < support_as_absolute
 					&& (it->elements[ADJ_INFO_CHANGETIME] >= 0 || it->elements[ADJ_INFO_SRC_CHANGETIME] >= 0 || it->elements[ADJ_INFO_DST_CHANGETIME] >= 0));
 			}
 
@@ -1001,12 +1007,12 @@ namespace dgrminer
 				{
 					mapped_occurrences.insert(queryMappingSnapshotsToGraphs(*it2));
 				}
-				return (((!new_measures && mapped_occurrences.size() < support_as_absolute) || (new_measures && it->support(edges, true) < support_as_absolute))
+				return (((!new_measures && mapped_occurrences.size() < support_as_absolute) || (new_measures && it->support(edges, true, heuristic_mis) < support_as_absolute))
 					&& (it->elements[ADJ_INFO_CHANGETIME] >= 0 || it->elements[ADJ_INFO_SRC_CHANGETIME] >= 0 || it->elements[ADJ_INFO_DST_CHANGETIME] >= 0));
 			}
 			else
 			{
-				return (it->support(edges, new_measures) < support_as_absolute
+				return (it->support(edges, new_measures, heuristic_mis) < support_as_absolute
 					&& (it->elements[ADJ_INFO_CHANGETIME] >= 0 || it->elements[ADJ_INFO_SRC_CHANGETIME] >= 0 || it->elements[ADJ_INFO_DST_CHANGETIME] >= 0));
 			}
 

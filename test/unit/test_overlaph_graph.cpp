@@ -13,7 +13,7 @@ TEST(OveralGraphSupport, testSupportCalculationSimple)
   	// 0 ----- 1 ----- 2
   	// 		   |
   	//		   3
-  	dgrminer::OverlapGraph overlapGraph;
+  	dgrminer::OverlapGraph overlapGraph(false);
   	for (int i = 0; i < 5; ++i) {
 	  	overlapGraph.addVertex();
   	}
@@ -32,7 +32,7 @@ TEST(OveralGraphSupport, testSupportCalculationAdvanced)
 	// 0 ----- 1 ----- 5 ----- 6
 	// |	   |	   |
 	// 2 ----- 3 ----- 4
-	dgrminer::OverlapGraph overlapGraph;
+	dgrminer::OverlapGraph overlapGraph(false);
   	for (int i = 0; i < 7; ++i) {
 		overlapGraph.addVertex();
 	}
@@ -51,10 +51,10 @@ TEST(OveralGraphSupport, testSupportCalculationAdvanced)
 TEST(OveralGraphSupport, testEmpty)
 {
 
-  dgrminer::OverlapGraph overlapGraph;
-  for (int i = 0; i < 7; ++i) {
+  dgrminer::OverlapGraph overlapGraph(false);
+  for (int i = 0; i < 4; ++i) {
 	  overlapGraph.addVertex();
   }
 
-  EXPECT_TRUE(equal(overlapGraph.computeSupport(), 7));
+  EXPECT_TRUE(equal(overlapGraph.computeSupport(), 4));
 }

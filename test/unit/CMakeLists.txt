@@ -3,8 +3,6 @@ add_executable(runBasicDGRMinerTests
         test_common_utils.cpp
         test_dgrsubgraph_mining.cpp
         test_dgrsubgraph_mining_compute_antecedent_pattern_from_pattern.cpp
-        test_dgrsubgraph_mining_enumerate.cpp
-        test_dgrsubgraph_mining_enumerate_antecedent.cpp
         test_file_reader.cpp
         test_helper_functions.cpp
         test_min_code.cpp

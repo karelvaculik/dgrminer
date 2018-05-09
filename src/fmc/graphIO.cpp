@@ -58,3 +58,5 @@ void CGraphIO::CalculateVertexDegrees()
 
 		return;
 }
+
+

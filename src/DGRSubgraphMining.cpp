@@ -17,13 +17,14 @@ namespace dgrminer
 	template<typename T>
 	inline size_t support(const T &occurrences,
 					  const std::unordered_map<int, std::set<std::set<int>>> &multiple_occurrences,
-					  bool new_measures
+					  bool new_measures,
+					  bool heuristic_mis
 	) {
 	  	if (new_measures) {
 		  	size_t support = 0;
 
 			for (auto const &snapshotId : occurrences) {
-		  		OverlapGraph og;
+		  		OverlapGraph og(heuristic_mis);
 		  		std::map<std::set<int>, int> mapping;
 
 		  		for (auto const &occurrence : multiple_occurrences.at(snapshotId)) {
@@ -70,7 +71,7 @@ namespace dgrminer
                            int max_absolute_support, double min_confidence, bool compute_confidence,
                            PartialUnion pu, std::vector<int> &antecedent_graph_ids,
                            bool set_of_graphs, bool search_for_anomalies, double min_anomaly_outlierness,
-                           std::string output_file, bool verbose, bool new_measures)
+                           std::string output_file, bool verbose, bool new_measures, bool heuristic_mis)
 	{
 		// check min code
 		if (!is_min_code(pattern_edge_list, starting_edges)) {
@@ -104,7 +105,8 @@ namespace dgrminer
 					(new_measures && (support<std::set<int>>(
 						(*itr).occurrences,
 						(*itr).multiple_occurrences,
-						new_measures
+						new_measures,
+						heuristic_mis
 					) < support_as_absolute))) {
 				  	children.erase(itr++);
 				}
@@ -112,7 +114,7 @@ namespace dgrminer
 				else ++itr;
 			}
 			else {
-				if (support<std::set<int>>((*itr).occurrences, (*itr).multiple_occurrences, new_measures) < support_as_absolute) {
+				if (support<std::set<int>>((*itr).occurrences, (*itr).multiple_occurrences, new_measures, heuristic_mis) < support_as_absolute) {
 				  	children.erase(itr++);
 				}
 
@@ -124,7 +126,7 @@ namespace dgrminer
 	  	int pattern_support_absolute = 0;
 
 
-		if (set_of_graphs)
+		if (set_of_graphs && !new_measures)
 		{
 			std::set<int> mapped_set_of_graphs;
 			for (int id : graph_ids)
@@ -132,9 +134,9 @@ namespace dgrminer
 				mapped_set_of_graphs.insert(pu.queryMappingSnapshotsToGraphs(id));
 			}
 
-		  	pattern_support_absolute = (int) support<std::vector<int>>(graph_ids, multiple_pattern_occurrences, new_measures);
+		  	pattern_support_absolute = (int) mapped_set_of_graphs.size();
 		} else {
-		  	pattern_support_absolute = (int) support<std::vector<int>>(graph_ids, multiple_pattern_occurrences, new_measures);
+		  	pattern_support_absolute = (int) support<std::vector<int>>(graph_ids, multiple_pattern_occurrences, new_measures, heuristic_mis);
 		}
 
 		std::vector<int> ant_occurrences;
@@ -208,7 +210,8 @@ namespace dgrminer
 					antecedent_abs_sup = (int)support(
 						ant_times,
 						multiple_antecedent_occurrences,
-						new_measures
+						new_measures,
+						heuristic_mis
 					);
 				}
 			}
@@ -228,9 +231,16 @@ namespace dgrminer
 
 			if (confidence >= min_confidence)
 			{
-			  debug_println(verbose, "SUP: ", pattern_support_absolute, ", ANT SUP: ", antecedent_abs_sup,
+			  	debug_println(verbose, "SUP: ", pattern_support_absolute, ", ANT SUP: ", antecedent_abs_sup,
 							", CONFIDENCE: ", confidence);
-				double support_relative = (double)pattern_support_absolute / (double)max_absolute_support;
+			  	double support_relative = 0;
+
+			  	if (new_measures) {
+					support_relative = (double)graph_ids.size() / (double)max_absolute_support;
+				} else {
+					support_relative = (double)pattern_support_absolute / (double)max_absolute_support;
+				}
+
 				save_pattern(pattern_edge_list, graph_ids, results, set_of_graphs, pu, pattern_support_absolute,
                              support_relative, ant_times, confidence, verbose);
 
@@ -275,7 +285,14 @@ namespace dgrminer
 		else
 		{
 			std::set<int> ant_times;
-			double support_relative = (double)pattern_support_absolute / (double)max_absolute_support;
+
+			double support_relative = 0;
+		  	if (new_measures) {
+				support_relative = (double)graph_ids.size() / (double)max_absolute_support;
+			} else {
+				support_relative = (double)pattern_support_absolute / (double)max_absolute_support;
+			}
+
 			save_pattern(pattern_edge_list, graph_ids, results, set_of_graphs, pu, pattern_support_absolute,
                          support_relative, ant_times, -1.0, verbose);
 			printResultsToFiles(results, results_anomalies, pu, output_file, set_of_graphs, compute_confidence, search_for_anomalies, true);
@@ -293,7 +310,7 @@ namespace dgrminer
 			DGRSubgraphMining(adjacency_lists, new_graph_ids, pattern_edge_list, support_as_absolute, starting_edges, results,
                               results_anomalies, max_absolute_support, min_confidence, compute_confidence, pu,
                               ant_occurrences, set_of_graphs, search_for_anomalies, min_anomaly_outlierness,
-                              output_file, verbose, new_measures);
+                              output_file, verbose, new_measures, heuristic_mis);
 			pattern_edge_list.pop_back();
 		}
 	}

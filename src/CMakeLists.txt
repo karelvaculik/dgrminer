@@ -23,6 +23,7 @@ set(SOURCE_FILES
         fmc/findClique.cpp
         fmc/graphIO.cpp
         fmc/utils.cpp
+        fmc/findCliqueHeu.cpp
         )
 
 add_library(src STATIC ${SOURCE_FILES} ${HEADER_FILES})

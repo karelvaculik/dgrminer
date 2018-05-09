@@ -41,7 +41,8 @@ namespace dgrminer {
 
         size_t support(
             const std::vector<std::array<int, 8>>& edges,
-            bool new_measures
+            bool new_measures,
+            bool heuristic_mis
         ) const;
     };
 
@@ -75,6 +76,7 @@ namespace dgrminer {
 
         std::vector<int> mappingSnapshotsToGraphs;
         bool new_measures;
+        bool heuristic_mis;
 
 		// adjacency lists for all nodes (without filtering) for all snapshots; used for new measures
         std::vector<std::unordered_map<int, std::set<int>>> rawAdjacencyLists;
@@ -91,8 +93,9 @@ namespace dgrminer {
         void printEncoding();
         void printDimensions();
 
-        void setNewMeasures(bool new_measures);
+        void setNewMeasuresAndHeuristics(bool new_measures, bool heuristic_mis);
         bool getNewMeasures();
+        bool getHeuristicMIS();
 
         int getLabelEncoding(string label);
 

@@ -34,18 +34,17 @@ using namespace std;
 
 typedef std::vector<int> IntVector;
 
-class CGraphIO {
+class CGraphIO
+{
 public:
 
 	CGraphIO(){ }
 	virtual ~CGraphIO();
 
-	string getFileExtension(string fileName);
-	bool ReadMatrixMarketAdjacencyGraph(string s_InputFile, float connStrength = -DBL_MAX);
-	bool ReadMeTiSAdjacencyGraph(string s_InputFile);
 	void CalculateVertexDegrees();
 
 	int GetVertexCount(){ return m_vi_Vertices.size() - 1; }
+	int GetMaximumVertexDegree(){ return m_i_MaximumVertexDegree; }
 	
 	vector <int>* GetVerticesPtr(){ return &m_vi_Vertices; }
 	vector <int>* GetEdgesPtr(){ return &m_vi_Edges; }
@@ -55,10 +54,9 @@ public:
 	int m_i_MinimumVertexDegree;
 	double m_d_AverageVertexDegree;
 
-	string 	m_s_InputFile;
 
 	vector<int> 	m_vi_Vertices;
-	vector<int>   	m_vi_OrderedVertices;
+	vector<int>   m_vi_OrderedVertices;
 	vector<int> 	m_vi_Edges;
 	vector<double> 	m_vd_Values;
 };

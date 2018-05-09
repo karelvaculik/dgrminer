@@ -38,4 +38,6 @@ int getDegree(vector<int>* ptrVtx, int idx);
 int maxClique( CGraphIO& gio, int l_bound, vector<int>& max_clique_data );
 void maxCliqueHelper( CGraphIO& gio, vector<int>* U, int sizeOfClique, int& maxClq, vector<int>& max_clique_data_inter );
 
+int maxCliqueHeu( CGraphIO& gio );
+
 #endif 

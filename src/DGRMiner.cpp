@@ -60,7 +60,7 @@ namespace dgrminer
 
 	void run_DGRMiner(std::string input_file, std::string output_file, double min_support, double min_confidence,
 					  bool compute_confidence, int window_size, std::string str_timeabstraction,
-					  bool search_for_anomalies, double min_anomaly_outlierness, bool verbose, bool new_measures)
+					  bool search_for_anomalies, double min_anomaly_outlierness, bool verbose, bool new_measures, bool heuristic_mis)
 	{
 		// set abstractions appropriately
 		bool simple_time_abstraction = (str_timeabstraction == "bin_all");
@@ -85,7 +85,7 @@ namespace dgrminer
 		pu.printDimensions();
 		debug_println(verbose, "Number of dynamic graphs: ", pu.getNumberOfDynamicGraphs());
 
-	  	pu.setNewMeasures(new_measures);
+	  	pu.setNewMeasuresAndHeuristics(new_measures, heuristic_mis);
 
 		bool set_of_graphs = pu.getNumberOfDynamicGraphs() > 1;
 
@@ -216,7 +216,8 @@ namespace dgrminer
 			DGRSubgraphMining(adjacency_lists, initial_patterns_occurrences[i], init_pattern, min_absolute_support,
 							  starting_edges, &results, &results_anomalies,
 							  max_absolute_support, min_confidence, compute_confidence, pu, antecedent_graph_ids,
-							  set_of_graphs, search_for_anomalies, min_anomaly_outlierness, output_file, verbose, new_measures);
+							  set_of_graphs, search_for_anomalies, min_anomaly_outlierness, output_file, verbose, new_measures,
+							  heuristic_mis);
 		}
 
 		debug_println(verbose, "FINISHED.");
@@ -238,7 +239,7 @@ namespace dgrminer
 					mapped_occurrences.insert(pu.queryMappingSnapshotsToGraphs(*it2));
 				}
 				if (((!pu.getNewMeasures() && static_cast<int>(mapped_occurrences.size()) >= support_as_absolute)
-					|| (pu.getNewMeasures() && static_cast<int>(f.support(pu.getEdges(), true)) >= support_as_absolute)) &&
+					|| (pu.getNewMeasures() && static_cast<int>(f.support(pu.getEdges(), true, pu.getHeuristicMIS())) >= support_as_absolute)) &&
 					(f.elements[ADJ_INFO_SRC_CHANGETIME] >= 0 || f.elements[ADJ_INFO_CHANGETIME] >= 0 ||
 					 f.elements[ADJ_INFO_DST_CHANGETIME] >= 0))
 				{
@@ -252,7 +253,7 @@ namespace dgrminer
 			}
 			else
 			{
-				if (static_cast<int>(f.support(pu.getEdges(), pu.getNewMeasures())) >= support_as_absolute &&
+				if (static_cast<int>(f.support(pu.getEdges(), pu.getNewMeasures(), pu.getHeuristicMIS())) >= support_as_absolute &&
 					(f.elements[ADJ_INFO_SRC_CHANGETIME] >= 0 || f.elements[ADJ_INFO_CHANGETIME] >= 0 ||
 					 f.elements[ADJ_INFO_DST_CHANGETIME] >= 0))
 				{
