@@ -229,6 +229,11 @@ namespace dgrminer
 
 			double confidence = ((double)pattern_support_absolute) / ((double)antecedent_abs_sup);
 
+			if (heuristic_mis) {
+			  	// in case of heuristic, we limit confidence to max 1
+			  	confidence = std::min((double)1, confidence);
+			}
+
 			if (confidence >= min_confidence)
 			{
 			  	debug_println(verbose, "SUP: ", pattern_support_absolute, ", ANT SUP: ", antecedent_abs_sup,
