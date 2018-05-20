@@ -116,6 +116,35 @@ template <typename T> void println(const std::set<T> & t)
     println("");
 }
 
+template <typename T1, typename T2> void print_unordered_map(const std::unordered_map<T1, T2> &t)
+{
+    print("{");
+    int i = 0;
+    for (auto & kv : t)
+    {
+        print(kv.first);
+        print(": ");
+        print(kv.second);
+        if (i < t.size() - 1)
+        {
+            print(", ");
+        }
+        i++;
+    }
+    print("}");
+}
+
+template <typename T1, typename T2> void print(const std::unordered_map<T1, T2> &t)
+{
+    print_unordered_map(t);
+}
+
+template <typename T1, typename T2> void println(const std::unordered_map<T1, T2> &t)
+{
+    print_unordered_map(t);
+    println("");
+}
+
 
 template<typename T, std::size_t size> inline void print_array(const std::array<T, size> & t)
 {
