@@ -82,11 +82,13 @@ If there are at least 2 dynamic graphs in the file, DGRMiner will automatically 
 -h, --help              Shows this help message
 -i INPUTFILE            Specifies the input file
 -o OUTPUTFILE           Specifies the common prefix for output files
--s K                    Specifies the minimum support; decimal value from [0.0, 1.0]
+-s K                    Specifies the minimum support; decimal value not lower than 0; if old measures are used, minimum support cannot be greater 1
 -c M                    Specifies the minimum confidence; decimal value from [0.0, 1.0]; if not specified, the confidence is not computed
 -w N                    Specifies the size of window; 10 by default
 -t {bin_nodes,bin_all}  Specifies the type of time abstraction
 -a A                    Switches to anomaly detection; Only anomalies with outlierness >= A will be outputted; A is a decimal value from [0.0, 1.0]
+-m                      Use new measures
+-e                      Use heuristic algorithm for computing MIS size
 
 
 3) DESCRIPTION OF THE OUTPUT FORMAT:
@@ -172,3 +174,6 @@ v 1.1.1:
 
 v 2.0.0:
 - added anomaly detection; see IDA'16 paper
+
+v 3.0.0:
+- added new support and confidence measures

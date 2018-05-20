@@ -11,6 +11,7 @@
 
 namespace dgrminer
 {
+
 	void printResultsToFiles(results_crate * results, results_crate_anomalies * results_anomalies, PartialUnion pu, std::string output_file, bool set_of_graphs,
 		bool compute_confidence, bool search_for_anomalies, bool append_to_file)
 	{
@@ -251,6 +252,18 @@ namespace dgrminer
 		}
 	}
 
+	void PartialUnion::setNewMeasuresAndHeuristics(bool new_measures, bool heuristic_mis) {
+	 	this->new_measures = new_measures;
+	 	this->heuristic_mis = heuristic_mis;
+	}
+
+	bool PartialUnion::getNewMeasures() {
+	  	return new_measures;
+	}
+
+	bool PartialUnion::getHeuristicMIS() {
+  		return heuristic_mis;
+	}
 
 	PartialUnion::PartialUnion()
 	{
@@ -509,42 +522,119 @@ namespace dgrminer
 
 
 
-	void PartialUnion::addLabeledNodeOccurrence(int label, int changetime, std::vector<labeled_node> & labeled_nodes, bool set_of_graphs, int occurrence)
-	{
+	void PartialUnion::addLabeledNodeOccurrence(
+		size_t node_index,
+		int label,
+		int changetime,
+		std::vector<labeled_node> & labeled_nodes,
+		bool set_of_graphs,
+		int occurrence
+	) {
 		labeled_node ln;
 		ln.label = label; // nodes[i][PN_LABEL];
 		ln.changetime = changetime; // nodes[i][PN_CHANGETIME];
 		auto it = std::find_if(labeled_nodes.begin(), labeled_nodes.end(), ln);
 		if (it != std::end(labeled_nodes))
 		{
-			if (set_of_graphs)
-			{
-				it->occurrences.insert(queryMappingSnapshotsToGraphs(occurrence));
-			}
-			else
-			{
-				it->occurrences.insert(occurrence);
-			}
+		  	if (new_measures) {
+			  	it->occurrences.insert(occurrence);
+				it->multiple_occurrences[occurrence].insert(node_index);
+		  	}
+		  	else  {
+			  	if (set_of_graphs) {
+					it->occurrences.insert(queryMappingSnapshotsToGraphs(occurrence));
+				} else {
+					it->occurrences.insert(occurrence);
+				}
+		  	}
+
 		}
 		else
 		{
-			if (set_of_graphs)
-			{
-				ln.occurrences.insert(queryMappingSnapshotsToGraphs(occurrence));
-			}
-			else
-			{
-				ln.occurrences.insert(occurrence);
-			}
+		  	if (new_measures) {
+			  	ln.occurrences.insert(occurrence);
+				ln.multiple_occurrences[occurrence].insert(node_index);
+			} else {
+			  	if (set_of_graphs) {
+					ln.occurrences.insert(queryMappingSnapshotsToGraphs(occurrence));
+				} else {
+					ln.occurrences.insert(occurrence);
+				}
+		  	}
+
 			labeled_nodes.push_back(ln);
 		}
+	}
+
+	size_t labeled_edge_with_occurrences::support(
+		const std::vector<std::array<int, 8>>& edges,
+		bool new_measures,
+		bool heuristic_mis
+	) const {
+		if (new_measures) {
+		  	if (!new_support.second) {
+			  	size_t current_support = 0;
+			  	for (auto const &snapshotId : occurrences) {
+				  	OverlapGraph og(heuristic_mis);
+				  	std::unordered_map<int, int> mapping;
+
+				  	for (auto const &occurrence : multiple_occurrences.at(snapshotId)) {
+					  	mapping[occurrence] = og.addVertex();
+				  	}
+
+				  	for (
+				  		auto firstOccurrence = multiple_occurrences.at(snapshotId).begin();
+						firstOccurrence != multiple_occurrences.at(snapshotId).end();
+						++firstOccurrence
+					) {
+						for (
+							auto secondOccurrence = std::next(firstOccurrence);
+							secondOccurrence != multiple_occurrences.at(snapshotId).end();
+							++secondOccurrence
+						) {
+						  	if (
+						  		edges[*firstOccurrence][PE_SRC] == edges[*secondOccurrence][PE_SRC] ||
+								edges[*firstOccurrence][PE_SRC] == edges[*secondOccurrence][PE_DST] ||
+							  	edges[*firstOccurrence][PE_DST] == edges[*secondOccurrence][PE_SRC] ||
+							  	edges[*firstOccurrence][PE_DST] == edges[*secondOccurrence][PE_DST]
+							) {
+								// there is a overlap between 2 occurrences
+								og.addEdge(mapping.at(*firstOccurrence), mapping.at(*secondOccurrence));
+							}
+						}
+					}
+
+				  	current_support += og.computeSupport();
+			  	}
+
+			  	new_support = {current_support, true};
+			  	return current_support;
+		  	}
+
+		  	return new_support.first;
+		}
+
+		return occurrences.size();
+	}
+
+	size_t labeled_node::support(bool new_measures) {
+	  	if (new_measures) {
+		  	size_t new_support = 0;
+			for (auto snapshotId : occurrences) {
+			  	new_support += multiple_occurrences.at(snapshotId).size();
+			}
+
+		  	return new_support;
+		}
+	  	return occurrences.size();
 	}
 	
 	void PartialUnion::computeFrequentVerticesAndRemoveTheInfrequentOnes(int support_as_absolute, double min_confidence,
 																		 bool compute_confidence, results_crate * results,
 																		 results_crate_anomalies * results_anomalies,
 																		 int max_absolute_support, bool set_of_graphs,
-																		 bool search_for_anomalies, double min_anomaly_outlierness)
+																		 bool search_for_anomalies, double min_anomaly_outlierness
+																		)
 	{
 		// compute occurrences of the vertex patterns
 		std::vector<labeled_node> labeled_nodes;
@@ -555,31 +645,32 @@ namespace dgrminer
 				// don't process "no-change" labels 
 				continue;
 			}
-			addLabeledNodeOccurrence(nodes[i][PN_LABEL], nodes[i][PN_CHANGETIME], labeled_nodes, set_of_graphs, nodes[i][PN_TIME] - 1);
-
+			addLabeledNodeOccurrence(
+				i,
+				nodes[i][PN_LABEL],
+				nodes[i][PN_CHANGETIME],
+				labeled_nodes,
+				set_of_graphs,
+				nodes[i][PN_TIME] - 1
+			);
 		}
 
 		if (!compute_confidence)
 		{
 			// we are looking for frequent patterns, so delete the infrequent vertices
 			// (but only if not computing confidence)
-			nodes.erase(std::remove_if(std::begin(nodes), std::end(nodes), [support_as_absolute, labeled_nodes](array<int, 6> node) {
+			nodes.erase(std::remove_if(std::begin(nodes), std::end(nodes), [support_as_absolute, &labeled_nodes, this](array<int, 6> node) {
 				labeled_node ln;
 				ln.label = node[PN_LABEL];
 				ln.changetime = node[PN_CHANGETIME];
 				auto it = std::find_if(labeled_nodes.begin(), labeled_nodes.end(), ln);
-				if (it != std::end(labeled_nodes))
-				{
-					if (it->occurrences.size() >= support_as_absolute) {
+				if (it != std::end(labeled_nodes)) {
+					if (it->support(new_measures) >= support_as_absolute) {
 						return false;
-					}
-					else
-					{
+					} else {
 						return true;
 					}
-				}
-				else
-				{
+				} else {
 					return false;
 				}
 			}), std::end(nodes));
@@ -589,7 +680,7 @@ namespace dgrminer
 		for (size_t i = 0; i < labeled_nodes.size(); i++)
 		{
 			// if the node is frequent,
-			if (labeled_nodes[i].occurrences.size() >= support_as_absolute)
+			if (labeled_nodes[i].support(new_measures) >= support_as_absolute)
 			{
 				// if we compute confidence
 				if (compute_confidence)
@@ -604,6 +695,8 @@ namespace dgrminer
 					std::vector<labeled_node> anomalous_vertices;
 
 					std::set<int> antecedent_occurrences;
+					std::unordered_map<int, std::set<int>> multiple_antecedent_occurrences;
+
 
 					// if it is not an addition change
 					if (prev_label != ANTECEDENT_LABEL_OF_ADDITION)
@@ -614,17 +707,27 @@ namespace dgrminer
 						{
 							if (getAntecedentLabel(nodes[j][PN_LABEL]) == prev_label && getAntecedentChangetime(nodes[j][PN_CHANGETIME]) == prev_time)
 							{
-								if (set_of_graphs)
-								{
-									antecedent_occurrences.insert(queryMappingSnapshotsToGraphs(nodes[j][PN_TIME] - 1));
-								}
-								else
-								{
-									antecedent_occurrences.insert(nodes[j][PN_TIME] - 1);
-								}
+							  	if (new_measures) {
+									multiple_antecedent_occurrences[nodes[j][PN_TIME] - 1].insert(j);
+								  	antecedent_occurrences.insert(nodes[j][PN_TIME] - 1);
+							  	} else {
+								  	if (set_of_graphs) {
+										antecedent_occurrences.insert(queryMappingSnapshotsToGraphs(nodes[j][PN_TIME] - 1));
+									} else {
+									  	antecedent_occurrences.insert(nodes[j][PN_TIME] - 1);
+									}
+							  	}
+
 							}
 						}
-						antecedent_abs_support = antecedent_occurrences.size();
+						if (new_measures) {
+						  	antecedent_abs_support = 0;
+						  	for (int snapshotId : antecedent_occurrences) {
+							  	antecedent_abs_support += multiple_antecedent_occurrences[snapshotId].size();
+						  	}
+						} else {
+						  	antecedent_abs_support = antecedent_occurrences.size();
+						}
 					}
 					// if it is an addition change
 					else
@@ -636,7 +739,8 @@ namespace dgrminer
 						}
 					}
 					// compute confidence of the pattern:
-					double confidence = ((double)labeled_nodes[i].occurrences.size()) / ((double)antecedent_abs_support);
+					double confidence = ((double)labeled_nodes[i].support(new_measures)) / ((double)antecedent_abs_support);
+
 					
 					// if the confidence is high enough:
 					if (confidence >= min_confidence)
@@ -645,7 +749,7 @@ namespace dgrminer
 						results->saved_instances++;
 						std::array<int, 4> result_node = { results->saved_instances, 0, labeled_nodes[i].label, labeled_nodes[i].changetime };
 						results->result_nodes.push_back(result_node);
-						results->support_absolute.push_back(labeled_nodes[i].occurrences.size());
+						results->support_absolute.push_back(labeled_nodes[i].support(new_measures));
 						results->support.push_back((double)labeled_nodes[i].occurrences.size() / (double)max_absolute_support);
 						results->confidence.push_back(confidence);
 						std::vector<int> used_occurrences(labeled_nodes[i].occurrences.begin(), labeled_nodes[i].occurrences.end());
@@ -699,7 +803,7 @@ namespace dgrminer
 									if (getAntecedentLabel(nodes[j][PN_LABEL]) == prev_label && getAntecedentChangetime(nodes[j][PN_CHANGETIME]) == prev_time &&
 										(labeled_nodes[i].label != nodes[j][PN_LABEL] || labeled_nodes[i].changetime != nodes[j][PN_CHANGETIME]))
 									{
-										addLabeledNodeOccurrence(nodes[j][PN_LABEL], nodes[j][PN_CHANGETIME], anomalous_vertices, set_of_graphs, nodes[j][PN_TIME] - 1);
+										addLabeledNodeOccurrence(i, nodes[j][PN_LABEL], nodes[j][PN_CHANGETIME], anomalous_vertices, set_of_graphs, nodes[j][PN_TIME] - 1);
 									}
 								}
 							}
@@ -730,18 +834,16 @@ namespace dgrminer
 
 				}
 				// if we are not computing confidence (and certainly not computing anomalies)
-				else
-				{
+				else {
 					// JUST SAVE THEM
 					results->saved_instances++;
 					std::array<int, 4> result_node = { results->saved_instances, 0, labeled_nodes[i].label, labeled_nodes[i].changetime };
 					results->result_nodes.push_back(result_node);
-					results->support_absolute.push_back(labeled_nodes[i].occurrences.size());
-					results->support.push_back((double)labeled_nodes[i].occurrences.size() / (double)max_absolute_support);
+					results->support_absolute.push_back(labeled_nodes[i].support(new_measures));
+					results->support.push_back((double)labeled_nodes[i].support(new_measures) / (double)max_absolute_support);
 					std::vector<int> used_occurrences(labeled_nodes[i].occurrences.begin(), labeled_nodes[i].occurrences.end());
 					results->occurrences.push_back(used_occurrences);
 				}
-
 			}
 		}
 
@@ -834,31 +936,40 @@ namespace dgrminer
 			le.elements = smallerDirectionOfAdjacencyInfo(newedge);
 
 			auto it = edges_set.find(le);
+
 			if (it != std::end(edges_set))
 			{
 
 				(it->occurrences).insert(edges[i][PE_TIME] - 1); // - 1 because TIME is indexed from 1, but graphs from 0
+
+			  	if (new_measures) {
+				  	(it->multiple_occurrences[edges[i][PE_TIME] - 1]).insert(i);
+				}
 			}
 			else
 			{
 				le.occurrences.insert(edges[i][PE_TIME] - 1); // - 1 because TIME is indexed from 1, but graphs from 0
-				edges_set.insert(le);
+
+			  	if (new_measures) {
+					le.multiple_occurrences[edges[i][PE_TIME] - 1].insert(i);
+				}
+
+			  	edges_set.insert(le);
 			}
 		}
-
 	}
 
 	void PartialUnion::removeInfrequentEdges(std::vector<std::array<int, 8>> & newedges, std::set<labeled_edge_with_occurrences> & edges_set,
 		int support_as_absolute, bool set_of_graphs, bool debugPrint = false)
 	{
 		int count = 0;
-		edges.erase(std::remove_if(std::begin(edges), std::end(edges), [edges_set, support_as_absolute, newedges, &count, set_of_graphs, this](array<int, 8> edge) {
+		edges.erase(std::remove_if(std::begin(edges), std::end(edges), [&edges_set, support_as_absolute, newedges, &count, set_of_graphs, this](array<int, 8> edge) mutable {
 			std::array<int, 8> ne = newedges[count];
 			labeled_edge_with_occurrences le;
 			le.elements = smallerDirectionOfAdjacencyInfo(ne);
 			++count;
 
-			auto it = edges_set.find(le);
+		  	std::set<labeled_edge_with_occurrences>::iterator it = edges_set.find(le);
 
 			if (set_of_graphs)
 			{
@@ -868,13 +979,14 @@ namespace dgrminer
 				{
 					mapped_occurrences.insert(queryMappingSnapshotsToGraphs(*it2));
 				}
-				return (mapped_occurrences.size() < support_as_absolute
+
+				return (((!new_measures && mapped_occurrences.size() < support_as_absolute) || (new_measures && it->support(edges, true, heuristic_mis) < support_as_absolute))
 					&& (it->elements[ADJ_INFO_CHANGETIME] >= 0 || it->elements[ADJ_INFO_SRC_CHANGETIME] >= 0 || it->elements[ADJ_INFO_DST_CHANGETIME] >= 0));
 			}
 			else
 			{
 				// only change edges can be infrequent (i.e. any of their changetimes >= 0)
-				return (it->occurrences.size() < support_as_absolute
+				return (it->support(edges, new_measures, heuristic_mis) < support_as_absolute
 					&& (it->elements[ADJ_INFO_CHANGETIME] >= 0 || it->elements[ADJ_INFO_SRC_CHANGETIME] >= 0 || it->elements[ADJ_INFO_DST_CHANGETIME] >= 0));
 			}
 
@@ -895,12 +1007,12 @@ namespace dgrminer
 				{
 					mapped_occurrences.insert(queryMappingSnapshotsToGraphs(*it2));
 				}
-				return (mapped_occurrences.size() < support_as_absolute
+				return (((!new_measures && mapped_occurrences.size() < support_as_absolute) || (new_measures && it->support(edges, true, heuristic_mis) < support_as_absolute))
 					&& (it->elements[ADJ_INFO_CHANGETIME] >= 0 || it->elements[ADJ_INFO_SRC_CHANGETIME] >= 0 || it->elements[ADJ_INFO_DST_CHANGETIME] >= 0));
 			}
 			else
 			{
-				return (it->occurrences.size() < support_as_absolute
+				return (it->support(edges, new_measures, heuristic_mis) < support_as_absolute
 					&& (it->elements[ADJ_INFO_CHANGETIME] >= 0 || it->elements[ADJ_INFO_SRC_CHANGETIME] >= 0 || it->elements[ADJ_INFO_DST_CHANGETIME] >= 0));
 			}
 
@@ -963,7 +1075,10 @@ namespace dgrminer
 			// for each snapshot
 			// initialize vectors of appropriate sizes:
 			std::vector<std::vector<int>> adjacencyList(numbers_of_nodes[current_snapshot - 1], std::vector<int>(0));
-			std::vector<std::vector<std::array<int, ADJ_INFO___SIZE>>> adjacencyMoreInfo(numbers_of_nodes[current_snapshot - 1], std::vector<std::array<int, ADJ_INFO___SIZE>>(0));
+			std::vector<std::vector<std::array<int, ADJ_INFO___SIZE>>> adjacencyMoreInfo(
+				numbers_of_nodes[current_snapshot - 1],
+				std::vector<std::array<int, ADJ_INFO___SIZE>>(0)
+			);
 			std::vector<std::array<int, ADJ_NODES___SIZE>> adjacencyListNodes; // NEW
 
 			while (n_index < nodes.size() && nodes[n_index][PN_TIME] <= current_snapshot)
@@ -1041,4 +1156,9 @@ namespace dgrminer
 			std::cout << std::endl;
 		}
 	}
+
+	std::vector<std::array<int, 8>> PartialUnion::getEdges() const {
+	  	return edges;
+	}
+
 }

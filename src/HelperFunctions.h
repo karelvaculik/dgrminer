@@ -131,7 +131,7 @@ namespace dgrminer {
         int saved_instances;
         std::vector<std::array<int, RESULT_NODES___SIZE>> result_nodes;
         std::vector<std::array<int, RESULT_EDGES___SIZE>> result_edges;
-        std::vector<int> support_absolute;
+        std::vector<size_t> support_absolute;
         std::vector<double> support;
         std::vector<double> confidence;
         std::vector<std::vector<int>> occurrences;

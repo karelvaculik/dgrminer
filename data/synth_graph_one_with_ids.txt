@@ -1,0 +1,704 @@
+init
+v 1 B
+v 2 A
+v 3 B
+v 4 A
+v 5 A
+v 6 A
+v 7 A
+v 8 A
+v 9 B
+v 10 A
+d 1 2 5 y
+d 3 4 5 y
+d 4 6 10 y
+d 5 1 10 z
+d 6 6 7 z
+d 7 6 8 z
+d 10 1 4 y
+d 12 1 8 z
+d 13 3 9 z
+d 14 2 6 z
+d 16 2 8 z
+d 17 3 7 y
+d 19 2 4 z
+d 2 10 2 z
+d 8 6 4 y
+d 9 10 3 z
+d 11 9 1 z
+d 15 10 7 z
+d 18 8 4 y
+d 20 9 4 z
+changes
+t # 1
+cn 4 B
+ce 7 y
+an 11 A
+t # 2
+dn 9
+de 11
+de 13
+de 20
+cn 4 A
+cn 3 A
+ce 19 y
+t # 3
+dn 5
+de 1
+de 3
+cn 2 B
+cn 11 B
+ce 12 y
+an 12 B
+t # 4
+cn 6 B
+ce 6 y
+ae d 21 7 8 y
+ae d 22 12 2 z
+ae d 23 4 11 y
+t # 5
+de 7
+cn 10 B
+cn 11 A
+ce 5 y
+ce 9 y
+ae d 24 11 6 z
+ae d 25 6 3 y
+ae d 26 11 12 y
+t # 6
+de 4
+ae d 27 3 4 y
+ae d 28 3 1 y
+ae d 29 7 1 y
+t # 7
+cn 4 B
+cn 12 A
+ce 29 z
+ce 12 z
+ae d 30 12 4 z
+ae d 31 11 3 y
+t # 8
+de 10
+ce 17 z
+ce 21 z
+an 13 A
+ae d 32 8 6 y
+ae d 33 13 1 y
+ae d 34 12 3 y
+t # 9
+dn 6
+de 6
+de 8
+de 14
+de 24
+de 25
+de 32
+de 30
+cn 13 B
+cn 1 A
+ce 9 z
+t # 10
+dn 1
+de 5
+de 12
+de 28
+de 29
+de 33
+ce 19 z
+ce 22 y
+ae d 35 13 8 z
+ae d 36 2 13 z
+ae d 37 13 12 y
+t # 11
+dn 12
+de 22
+de 26
+de 34
+de 37
+cn 10 A
+cn 7 B
+ce 36 y
+an 14 B
+t # 12
+cn 10 B
+an 15 B
+ae d 38 14 4 z
+ae d 39 11 2 z
+t # 13
+de 27
+cn 8 B
+an 16 A
+ae d 40 8 11 y
+ae d 41 15 16 y
+ae d 42 14 10 z
+t # 14
+dn 8
+de 16
+de 18
+de 21
+de 35
+de 40
+de 36
+cn 3 B
+ce 23 z
+ce 42 y
+ae d 43 13 7 y
+ae d 44 13 4 z
+ae d 45 15 4 y
+t # 15
+cn 11 B
+ce 43 z
+ce 9 y
+ae d 46 15 10 z
+t # 16
+dn 15
+de 41
+de 45
+de 46
+ae d 47 3 16 z
+ae d 48 11 14 z
+t # 17
+de 47
+cn 11 A
+cn 2 A
+t # 18
+dn 2
+de 2
+de 19
+de 39
+cn 7 A
+cn 13 A
+ce 23 y
+ce 31 z
+an 17 A
+ae d 49 11 17 y
+t # 19
+cn 3 A
+an 18 B
+ae d 50 14 13 y
+ae d 51 4 17 y
+ae d 52 10 11 y
+t # 20
+de 52
+cn 4 A
+ce 15 y
+ae d 53 16 10 y
+t # 21
+cn 16 B
+ce 17 y
+an 19 A
+t # 22
+cn 11 B
+cn 18 A
+ce 51 z
+an 20 A
+t # 23
+cn 11 A
+ce 48 y
+ae d 54 7 14 z
+t # 24
+ce 23 z
+ce 15 z
+ae d 55 3 19 z
+t # 25
+dn 11
+de 23
+de 31
+de 48
+de 49
+cn 10 A
+ae d 56 3 13 y
+t # 26
+dn 13
+de 43
+de 44
+de 50
+de 56
+ce 38 y
+t # 27
+dn 16
+de 53
+cn 10 B
+ce 15 y
+ce 51 y
+ae d 57 19 17 y
+ae d 58 17 7 y
+t # 28
+dn 3
+de 9
+de 17
+de 55
+cn 10 A
+ce 42 z
+an 21 A
+ae d 59 7 19 y
+ae d 60 7 4 z
+t # 29
+dn 21
+cn 20 B
+t # 30
+dn 17
+de 51
+de 57
+de 58
+cn 18 B
+cn 10 B
+ce 59 z
+ae d 61 20 7 y
+ae d 62 14 19 y
+ae d 63 18 7 y
+t # 31
+dn 4
+de 38
+de 60
+ce 42 y
+ae d 64 20 19 y
+ae d 65 18 20 z
+t # 32
+dn 18
+de 63
+de 65
+cn 10 A
+cn 19 B
+ce 15 z
+ce 61 z
+an 22 B
+t # 33
+dn 19
+de 59
+de 62
+de 64
+cn 22 A
+ce 54 y
+ce 15 y
+an 23 B
+ae d 66 23 20 z
+ae d 67 7 22 y
+ae d 68 7 23 z
+t # 34
+dn 23
+de 66
+de 68
+cn 20 A
+cn 22 B
+ce 15 z
+ce 67 z
+t # 35
+cn 7 B
+ce 67 y
+ae d 69 14 22 z
+ae d 70 22 20 z
+t # 36
+ae d 71 10 22 z
+ae d 72 14 20 z
+ae d 73 10 20 z
+t # 37
+cn 20 B
+cn 10 B
+ce 54 z
+t # 38
+cn 7 A
+cn 22 A
+ce 73 y
+ce 54 y
+t # 39
+ce 42 z
+ce 15 y
+t # 40
+ce 73 z
+ce 42 y
+an 24 A
+ae d 74 24 14 z
+t # 41
+cn 20 A
+cn 14 A
+ce 72 y
+an 25 A
+ae d 75 10 25 y
+ae d 76 22 25 z
+t # 42
+ce 71 y
+ae d 77 20 24 y
+t # 43
+dn 22
+de 67
+de 69
+de 70
+de 71
+de 76
+an 26 B
+t # 44
+dn 10
+de 15
+de 42
+de 73
+de 75
+cn 25 B
+cn 20 B
+ce 77 z
+ce 72 z
+t # 45
+dn 26
+cn 7 B
+ce 72 y
+an 27 B
+ae d 78 27 7 y
+ae d 79 7 25 y
+ae d 80 27 14 y
+t # 46
+cn 25 A
+cn 20 A
+ce 79 z
+ce 74 y
+t # 47
+cn 7 A
+cn 14 B
+an 28 B
+ae d 81 27 24 y
+ae d 82 24 28 z
+ae d 83 28 27 y
+t # 48
+cn 27 A
+cn 14 A
+t # 49
+dn 20
+de 61
+de 72
+de 77
+cn 25 B
+cn 24 B
+ce 54 z
+ce 74 z
+an 29 A
+t # 50
+cn 7 B
+ae d 84 7 24 y
+t # 51
+ce 84 z
+ce 54 y
+an 30 A
+ae d 85 14 30 z
+ae d 86 28 30 z
+t # 52
+dn 27
+de 78
+de 80
+de 81
+de 83
+cn 28 A
+cn 30 B
+ce 82 y
+ce 86 y
+an 31 B
+ae d 87 28 31 y
+ae d 88 28 14 y
+t # 53
+dn 30
+de 85
+de 86
+ce 54 z
+t # 54
+dn 25
+de 79
+cn 24 A
+ce 84 y
+ce 54 y
+ae d 89 31 29 y
+ae d 90 31 24 y
+t # 55
+dn 7
+de 54
+de 84
+ae d 91 29 24 y
+ae d 92 14 29 y
+ae d 93 14 31 y
+t # 56
+cn 28 B
+cn 29 B
+an 32 A
+t # 57
+cn 24 B
+cn 32 B
+ce 91 z
+ce 88 z
+ae d 94 24 32 z
+ae d 95 14 32 z
+ae d 96 28 29 z
+t # 58
+dn 29
+de 89
+de 91
+de 92
+de 96
+ce 74 y
+ce 94 y
+t # 59
+cn 32 A
+cn 14 B
+t # 60
+cn 28 A
+an 33 A
+ae d 97 14 33 y
+t # 61
+dn 28
+de 82
+de 87
+de 88
+ce 97 z
+ce 94 z
+an 34 A
+ae d 98 14 34 z
+ae d 99 31 32 z
+ae d 100 34 24 z
+t # 62
+dn 24
+de 74
+de 90
+de 94
+de 100
+cn 31 A
+ce 93 z
+ce 95 y
+t # 63
+ce 93 y
+ce 98 y
+ae d 101 34 33 z
+t # 64
+cn 34 B
+ce 97 y
+ce 99 y
+ae d 102 34 31 z
+ae d 103 32 33 z
+ae d 104 32 34 y
+t # 65
+cn 31 B
+cn 34 A
+ae d 105 31 32 z
+t # 66
+cn 33 B
+cn 14 A
+ae d 106 14 34 z
+t # 67
+ce 102 y
+ce 105 y
+t # 68
+cn 31 A
+t # 69
+de 99
+cn 14 B
+cn 32 B
+ce 93 z
+ae d 107 33 14 z
+t # 70
+de 98
+cn 33 A
+cn 32 A
+ae d 108 32 31 y
+t # 71
+cn 34 B
+cn 14 A
+ae d 109 14 34 y
+t # 72
+de 95
+ce 103 y
+ae d 110 31 33 y
+t # 73
+ce 103 z
+ce 109 z
+an 35 A
+ae d 111 31 35 y
+ae d 112 35 14 z
+t # 74
+dn 32
+de 103
+de 104
+de 105
+de 108
+ce 93 y
+an 36 A
+ae d 113 33 35 z
+ae d 114 31 36 y
+t # 75
+dn 33
+de 97
+de 101
+de 107
+de 110
+de 113
+ce 102 z
+ce 109 y
+ae d 115 34 35 z
+t # 76
+cn 36 B
+cn 35 B
+ce 102 y
+ae d 116 14 36 y
+ae d 117 36 35 y
+ae d 118 34 36 y
+t # 77
+ce 116 z
+ce 106 y
+t # 78
+de 118
+cn 31 B
+t # 79
+an 37 A
+ae d 119 36 34 z
+ae d 120 37 36 z
+t # 80
+dn 34
+de 102
+de 106
+de 109
+de 115
+de 119
+cn 31 A
+ce 120 y
+ce 93 z
+ae d 121 14 37 z
+t # 81
+cn 37 B
+cn 36 A
+ce 116 y
+an 38 A
+ae d 122 38 14 z
+ae d 123 35 38 y
+t # 82
+cn 36 B
+ce 120 z
+an 39 A
+ae d 124 36 39 y
+ae d 125 37 39 z
+ae d 126 36 38 y
+t # 83
+dn 39
+de 124
+de 125
+ce 114 z
+ce 120 y
+ae d 127 31 38 z
+t # 84
+dn 37
+de 120
+de 121
+ce 112 y
+an 40 A
+ae d 128 35 40 y
+ae d 129 36 40 z
+ae d 130 38 40 z
+t # 85
+de 112
+cn 31 B
+ce 128 z
+ce 127 y
+an 41 A
+t # 86
+cn 35 A
+ce 130 y
+ae d 131 14 41 y
+t # 87
+dn 36
+de 114
+de 116
+de 117
+de 126
+de 129
+cn 14 B
+cn 31 A
+an 42 B
+ae d 132 42 38 z
+ae d 133 42 31 y
+t # 88
+cn 38 B
+cn 14 A
+ce 93 y
+ce 132 y
+an 43 B
+ae d 134 41 35 y
+ae d 135 43 31 z
+t # 89
+dn 31
+de 93
+de 111
+de 127
+de 133
+de 135
+cn 43 A
+ce 131 z
+ae d 136 38 41 z
+ae d 137 42 40 y
+t # 90
+cn 35 B
+ce 122 y
+ce 132 z
+an 44 A
+ae d 138 44 40 z
+t # 91
+dn 38
+de 122
+de 123
+de 130
+de 132
+de 136
+cn 41 B
+cn 44 B
+ce 134 z
+t # 92
+ae d 139 40 14 z
+ae d 140 44 42 z
+ae d 141 43 40 z
+t # 93
+cn 43 B
+cn 44 A
+ce 137 z
+an 45 B
+ae d 142 45 14 y
+ae d 143 45 42 y
+t # 94
+dn 40
+de 128
+de 137
+de 138
+de 139
+de 141
+an 46 A
+ae d 144 45 44 z
+ae d 145 14 43 z
+t # 95
+dn 41
+de 131
+de 134
+ce 142 z
+ae d 146 45 43 y
+ae d 147 44 46 y
+t # 96
+cn 45 A
+cn 46 B
+an 47 A
+t # 97
+cn 43 A
+cn 44 B
+ce 146 z
+ce 145 y
+an 48 A
+t # 98
+cn 48 B
+cn 35 A
+ce 140 y
+ce 146 y
+an 49 B
+ae d 148 48 46 z
+t # 99
+dn 14
+de 142
+de 145
+cn 35 B
+cn 42 A
+ce 140 z
+ce 143 z
+an 50 B
+t # 100
+ce 147 z
+ae d 149 42 50 z
+ae d 150 42 35 y
+end
